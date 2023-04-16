@@ -23,3 +23,10 @@ Our project focuses on the 2023 World Baseball Classic (WBC) and aims to investi
 ## Phase 1 - Random Variables
 
 ## Phase 2 & 3 - Controls & Experiments
+
+
+## References
+  - World Baseball Classic data
+  https://www.mlb.com/world-baseball-classic/stats/team/runs
+  - World Baseball Classic wikipedia
+  https://en.wikipedia.org/wiki/2023_World_Baseball_Classic
