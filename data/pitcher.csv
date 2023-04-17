@@ -1,4 +1,4 @@
-last_name, first_name,player_id,year,pa,bip,ba,est_ba,est_ba_minus_ba_diff,slg,est_slg,est_slg_minus_slg_diff,woba,est_woba,est_woba_minus_woba_diff,era,xera,era_minus_xera_diff,Country
+last_name,first_name,player_id,year,pa,bip,ba,est_ba,est_ba_minus_ba_diff,slg,est_slg,est_slg_minus_slg_diff,woba,est_woba,est_woba_minus_woba_diff,era,xera,era_minus_xera_diff,Country
 Kershaw, Clayton,477132,2023,73,51,0.239,0.25,-0.011,0.418,0.453,-0.035,0.306,0.323,-0.017,3.5,4.33,-0.83,Australia
 Syndergaard, Noah,592789,2023,70,49,0.273,0.253,0.02,0.515,0.388,0.127,0.355,0.302,0.0529999999999999,5.63,3.74,1.885,Australia
 May, Dustin,669160,2023,68,49,0.115,0.221,-0.106,0.164,0.339,-0.175,0.181,0.288,-0.1069999999999999,1.47,3.38,-1.907,Australia
