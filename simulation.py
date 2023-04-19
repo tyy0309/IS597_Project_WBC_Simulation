@@ -2,6 +2,8 @@ from dataclasses import dataclass
 import random
 from typing import List
 
+import pandas as pd
+
 
 @dataclass
 class Player:
@@ -51,29 +53,16 @@ class Batter(Player):
 
 @dataclass
 class Team:
-    pitcher: Pitcher
+    pitchers: List[Pitcher]
     batters: List[Batter]
 
 
 def simulate_game(team1: Team, team2: Team, pitch_count: int) -> tuple[float, float]:
-    if random.randint(0, 1) == 0:
-        starting_pitcher = team1.pitcher
-        opposing_team = team2
-    else:
-        starting_pitcher = team2.pitcher
-        opposing_team = team1
 
-    pitching_performance = starting_pitcher.pa / (starting_pitcher.bip * pitch_count) * (
-            1 - starting_pitcher.est_ba_minus_ba_diff) * (1 - starting_pitcher.est_slg_minus_slg_diff) * (
-                                   1 - starting_pitcher.est_woba_minus_woba_diff) * starting_pitcher.era / starting_pitcher.xera
+    # TO-DO
+    team1_win_rate = 0
+    team2_win_rate = 0
 
-    hitting_performance = 0
-    for batter in opposing_team.batters:
-        hitting_performance += (batter.barrels / batter.attempts) * (batter.ev95plus / 100) * (
-                batter.avg_hit_speed / 100) * (batter.avg_distance / 400)
-
-    team1_win_rate = pitching_performance + hitting_performance
-    team2_win_rate = 2 - team1_win_rate
     return team1_win_rate, team2_win_rate
 
 
@@ -93,42 +82,60 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int, pitch_
 
     return team1_win_rate, team2_win_rate
 
+def generate_players(player_type, country, num_of_players):
+    if player_type not in ['Pitcher', 'Batter']:
+        raise ValueError("Invalid player type. Choose either 'Pitcher' or 'Batter'.")
+
+    if num_of_players < 1:
+        raise ValueError("Number of players must be at least 1.")
+
+    data_file = f"data/{player_type.lower()}.csv"
+    players_data = pd.read_csv(data_file)
+    players = players_data[players_data['Country'] == country]
+
+    if len(players) < num_of_players:
+        raise ValueError(f"Not enough {player_type.lower()}s from {country}")
+
+    random_players = players.sample(num_of_players)
+    players_list = []
+
+    for _, player in random_players.iterrows():
+        player_list = list(player)
+        reordered_player = [player_list[0], player_list[1], player_list[2], player_list[-1], *player_list[3:-1]]
+        players_list.append(reordered_player)
+
+    return players_list
+
+
+def generate_team(country, num_pitchers, num_batters):
+    pitchers_list = generate_players('Pitcher', country, num_pitchers)
+    batters_list = generate_players('Batter', country, num_batters)
+
+    pitchers = [Pitcher(*pitcher_data) for pitcher_data in pitchers_list]
+    batters = [Batter(*batter_data) for batter_data in batters_list]
+
+    return Team(pitchers, batters)
+
 
 if __name__ == "__main__":
-    # Example usage
-    pitcher_data = ["Kershaw", "Clayton", 477132, 2023, 73, 51, 0.239, 0.25, -0.011, 0.418, 0.453, -0.035, 0.306, 0.323,
-                    -0.017, 3.5, 4.33, -0.83, "Australia"]
-    batter_data1 = ["Freeman", "Freddie", 518692, 47, 11.6, 55.3, 107.0, 90.6, 93.2, 86.3, 425, 186, 396.0, 19, 41.3, 4,
-                    8.5, 6.3, "Australia"]
-    batter_data2 = ["Smith", "Will", 669257, 37, 13.7, 40.5, 110.8, 90.0, 95.3, 84.0, 390, 191, 373.0, 17, 47.2, 3, 8.1,
-                    6.3, "Australia"]
-    batter_data3 = ['Outman', "James", 681546, 25, 5.5, 44.0, 110.7, 91.2, 95.7, 86.9, 423, 179, 410.0, 11, 44.0, 6,
-                    24.0, 12.2, "Australia"]
 
-    pitcher = Pitcher(*pitcher_data)
-    batter1 = Batter(*batter_data1)
-    batter2 = Batter(*batter_data2)
-    batter3 = Batter(*batter_data3)
-    team1 = Team(pitcher, [batter1, batter2, batter3])
+    countries = ["Australia", "Cuba", "Italy", "Japan", "Mexico", "Puerto Rico", "USA", "Venezuela"]
 
-    # Create a second team for comparison
-    pitcher_data_ = ["Matz", "Steven", 571927, 2023, 76, 51, 0.328, 0.287, 0.041, 0.507, 0.447, 0.06, 0.392, 0.359,
-                     0.033, 6.48, 5.51, 0.97, "USA"]
-    batter_data1_ = ["Goldschmidt", "Paul", 502671, 41, 18.6, 36.6, 110.4, 95.4, 98.0, 91.8, 398, 192, 398.0, 24, 58.5,
-                     5, 12.2, 7.9, "USA"]
-    batter_data2_ = ["Neill", "Tyler", 641933, 30, 10.1, 40.0, 109.0, 92.7, 94.8, 90.1, 461, 168, 461.0, 16, 55.2, 4,
-                     13.3, 8.2, "USA"]
-    batter_data3_ = ["Helsley", "Ryan", 664854, 28, 16.6, 50.0, 110.3, 91.8, 95.6, 88.4, 446, 197, 411.0, 14,
-                     50.0, 4, 14.3, 8.5, "USA"]
+    while True:
+        print("Please choose two countries to match up:")
+        print(" ".join([f"{i + 1}. {country}" for i, country in enumerate(countries)]))
+        countryA = countries[int(input("Enter the number of country A: ")) - 1]
+        countryB = countries[int(input("Enter the number of country B: ")) - 1]
+        if countryA == countryB:
+            print("Error: You can't choose the same country!")
+        else:
+            break
 
-    pitcher_ = Pitcher(*pitcher_data_)
-    batter1_ = Batter(*batter_data1_)
-    batter2_ = Batter(*batter_data2_)
-    batter3_ = Batter(*batter_data3_)
-    team2 = Team(pitcher_, [batter1_, batter2_, batter3_])
+    team1 = generate_team(countryA, 3, 9)
+    team2 = generate_team(countryB, 3, 9)
 
-    team1_win_rate, team2_win_rate = monte_carlo_simulation(team1, team2, num_iterations=1000,
+    team1_win_rate, team2_win_rate = monte_carlo_simulation(team1, team2, num_iterations=10000,
                                                             pitch_count=random.randint(50, 100))
 
-    print(f"Team 1 ({team1.pitcher.Country}) win rate: {team1_win_rate}")
-    print(f"Team 2 ({team2.pitcher.Country}) win rate: {team2_win_rate}")
+    print(f"Team 1 ({team1.pitchers[0].Country}) win rate: {team1_win_rate}")
+    print(f"Team 2 ({team2.pitchers[0].Country}) win rate: {team2_win_rate}")
