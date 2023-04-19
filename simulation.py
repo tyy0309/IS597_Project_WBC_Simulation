@@ -94,22 +94,23 @@ def generate_team(country, num_pitchers, num_batters):
 
 def pitching_score(pitchers: List[Pitcher], pitch_count: int) -> float:
     # To-Do 投手的最低用球數？可以只投一顆嗎？
-    p1 = random.randint(10, pitch_count-10)
-    p2 = random.randint(10, pitch_count-10-p1)
-    p3 = pitch_count - p1 - p2
+    p1 = random.randint(10, pitch_count-10) #先發投手用球數
+    p2 = random.randint(10, pitch_count-10-p1) #中繼投手用球數
+    p3 = pitch_count - p1 - p2  #後援投手用球數
 
     pitch_for_each = [p1, p2, p3]
 
     # 計算每位投手的用球數百分比
+    # list
     pitch_count_percentage = [count / pitch_count for count in pitch_for_each]
 
     # 計算每位投手的加權表現
     # TO-DO 公式
+    # list
     weighted_performance = [percentage * pitcher.era_minus_xera_diff for percentage, pitcher in
                             zip(pitch_count_percentage, pitchers)]
 
-    print(pitch_for_each)
-    #return total_pitching_score
+    return sum(weighted_performance)
 
 
 def hitting_score(batters: List[Batter]) -> float:
@@ -126,17 +127,17 @@ def normalize_scores(score1: float, score2: float) -> Tuple[float, float]:
 def calculate_win_rate(team1: Team, team2: Team, pitch_count: int) -> Tuple[float, float]:
     team1_pitching_score = pitching_score(team1.pitchers, pitch_count)
     team1_hitting_score = hitting_score(team1.batters)
-    team1_total_score = team1_pitching_score + team1_hitting_score
+    # team1_total_score = team1_pitching_score + team1_hitting_score
     print(pitch_count, team1_pitching_score, team1_hitting_score)
     print(' ')
 
     team2_pitching_score = pitching_score(team2.pitchers, pitch_count)
     team2_hitting_score = hitting_score(team2.batters)
-    team2_total_score = team2_pitching_score + team2_hitting_score
+    # team2_total_score = team2_pitching_score + team2_hitting_score
     print(pitch_count, team2_pitching_score, team2_hitting_score)
     print('------')
 
-    team1_win_rate, team2_win_rate = normalize_scores(team1_total_score, team2_total_score)
+    # team1_win_rate, team2_win_rate = normalize_scores(team1_total_score, team2_total_score)
 
     return team1_win_rate, team2_win_rate
 
@@ -146,7 +147,7 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
     team2_wins = 0
 
     for i in range(num_iterations):
-        pitch_count = random.randint(300, 500)
+        pitch_count = random.randint(300, 500) # 三位投手總投球數
         team1_win_rate, team2_win_rate = calculate_win_rate(team1, team2, pitch_count)
         if team1_win_rate > team2_win_rate:
             team1_wins += 1
