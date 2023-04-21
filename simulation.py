@@ -9,48 +9,51 @@ import pandas as pd
 
 @dataclass
 class Player:
-    last_name: str
-    first_name: str
-    player_id: int
-    Country: str
+    player: str
+    country: str
 
 
 @dataclass
 class Pitcher(Player):
-    year: int
-    pa: int
-    bip: int
-    ba: float
-    est_ba: float
-    est_ba_minus_ba_diff: float
-    slg: float
-    est_slg: float
-    est_slg_minus_slg_diff: float
-    woba: float
-    est_woba: float
-    est_woba_minus_woba_diff: float
-    era: float
-    xera: float
-    era_minus_xera_diff: float
+    W: int
+    L: int
+    ERA: float
+    G: int
+    GS: int
+    CG: int
+    SHO: int
+    SV: int
+    SVO: int
+    IP: float
+    H: int
+    R: int
+    ER: int
+    HR: int
+    HB: int
+    BB: int
+    SO: int
+    WHIP: float
+    AVG: float
 
 
 @dataclass
 class Batter(Player):
-    attempts: int
-    avg_hit_angle: float
-    anglesweetspotpercent: float
-    max_hit_speed: float
-    avg_hit_speed: float
-    fbld: float
-    gb: float
-    max_distance: float
-    avg_distance: float
-    avg_hr_distance: float
-    ev95plus: int
-    ev95percent: float
-    barrels: int
-    brl_percent: float
-    brl_pa: float
+    G: int
+    AB: int
+    R: int
+    H: int
+    two_B: int
+    three_B: int
+    HR: int
+    RBI: int
+    BB: int
+    SO: int
+    SB: int
+    CS: int
+    AVG: float
+    OBP: float
+    SLG: float
+    OPS: float
 
 
 @dataclass
@@ -59,8 +62,35 @@ class Team:
     batters: List[Batter]
 
 
+# Constant variables for pitcher
+ERA_MIN = 0.0
+ERA_MAX = 108.0
+IP_MIN = 0.1
+IP_MAX = 9.2
+K_MIN = 0
+K_MAX = 13
+WHIP_MIN = 0.21
+WHIP_MAX = 12.0
+AVG_MIN = 0.067
+AVG_MAX = 0.8
+
+# Constant variables for batter
+AVG_B_MIN = 0.067
+AVG_B_MAX = 0.8
+OPS_MIN = 0
+OPS_MAX = 1.507
+RBI_MIN = 0
+RBI_MAX = 13
+BB_MIN = 0
+BB_MAX = 10
+SO_MIN = 0
+SO_MAX = 13
+SB_MIN = 0
+SB_MAX = 3
+
+
 def generate_players(player_type, country, num_of_players):
-    if player_type not in ['Pitcher', 'Batter']:
+    if player_type not in ['Pitchers', 'Batters']:
         raise ValueError("Invalid player type. Choose either 'Pitcher' or 'Batter'.")
 
     if num_of_players < 1:
@@ -68,7 +98,7 @@ def generate_players(player_type, country, num_of_players):
 
     data_file = f"data/{player_type.lower()}.csv"
     players_data = pd.read_csv(data_file)
-    players = players_data[players_data['Country'] == country]
+    players = players_data[players_data['team'] == country]
 
     if len(players) < num_of_players:
         raise ValueError(f"Not enough {player_type.lower()}s from {country}")
@@ -85,8 +115,8 @@ def generate_players(player_type, country, num_of_players):
 
 
 def generate_team(country, num_pitchers, num_batters):
-    pitchers_list = generate_players('Pitcher', country, num_pitchers)
-    batters_list = generate_players('Batter', country, num_batters)
+    pitchers_list = generate_players('Pitchers', country, num_pitchers)
+    batters_list = generate_players('Batters', country, num_batters)
 
     pitchers = [Pitcher(*pitcher_data) for pitcher_data in pitchers_list]
     batters = [Batter(*batter_data) for batter_data in batters_list]
@@ -94,90 +124,82 @@ def generate_team(country, num_pitchers, num_batters):
     return Team(pitchers, batters)
 
 
-def pitching_score(pitchers: List[Pitcher], pitch_count: int) -> float:
+def pitching_score(pitchers: List[Pitcher], pitch_count: int):
     # TODO: Make sure if it's reasonable to use only three pitchers in the first hypothesis
     # TODO: Add pitchers
-    p1 = random.randint(45, pitch_count-45) #先發投手用球數
-    p3 = random.randint(0, 15)  #後援投手用球數
-    p2 = random.randint(0, pitch_count-p1-p3) #中繼投手用球數
+    p1 = random.randint(45, pitch_count - 45)  # 先發投手用球數
+    p3 = random.randint(0, 15)  # 後援投手用球數
+    p2 = random.randint(0, pitch_count - p1 - p3)  # 中繼投手用球數
 
     pitch_for_each = [p1, p2, p3]
 
-    # 計算每位投手的用球數百分比
-    # list
     pitch_count_percentage = [count / pitch_count for count in pitch_for_each]
 
     weighted_performance = []
     for percentage, pitcher in zip(pitch_count_percentage, pitchers):
+        # 較低的值有更好的表現
+        normalized_ERA = 1 - pitcher.ERA / (ERA_MAX - ERA_MIN)
+        normalized_WHIP = 1 - pitcher.WHIP / (WHIP_MAX - WHIP_MIN)
+        normalized_BAA = 1 - pitcher.AVG / (AVG_MAX - AVG_MIN)
+
+        # 較高的值有更好的表現
+        normalized_IP = pitcher.IP / (IP_MAX - IP_MIN)
+        normalized_K = pitcher.SO / (K_MAX - K_MIN)
+
         # Calculate the performance for each pitcher
-        performance = (0.25 * pitcher.pa) + \
-                      (0.25 * pitcher.bip) + \
-                      (0.2 * pitcher.est_ba_minus_ba_diff) + \
-                      (0.1 * pitcher.est_slg_minus_slg_diff) + \
-                      (0.1 * pitcher.est_woba_minus_woba_diff) + \
-                      (0.1 * pitcher.era_minus_xera_diff)
+        performance = (0.3 * normalized_ERA) + \
+                      (0.25 * normalized_WHIP) + \
+                      (0.15 * normalized_BAA) + \
+                      (0.1 * normalized_IP) + \
+                      (0.2 * normalized_K)
+
         # Add the weighted performance score for the current pitcher to the list
         weighted_performance.append(percentage * performance)
 
-        # Normalize the weighted performance scores
-    scaler = MinMaxScaler()
-    normalized_performance = scaler.fit_transform(np.array(weighted_performance).reshape(-1, 1))
+    # Let final score between 0～1
+    final_score = sum(weighted_performance) / len(pitchers)
+    return p1, round(p1/pitch_count, 2), final_score
 
-    # Calculate the final pitching score as the sum of the normalized weighted performance scores
-    total_pitching_score = np.sum(normalized_performance)
-
-    return total_pitching_score
-
-# def hitting_score(batters: List[Batter]) -> float:
-#     total_hitting_score = sum([batter.brl_percent for batter in batters])
-#
-#     return total_hitting_score
 
 # TODO: value generated is not randomized rn, need to be fixed (Batter could be random generated)
 def hitting_score(batters: List[Batter]) -> float:
-    # performance = (0.35 * avg_hit_speed) + (0.25 * max_distance) + (0.2 * ev95plus) + (0.1 * barrels) + (0.1 * brl_percent)
-    scaler = MinMaxScaler()
+    all_performance = []
+    for batter in batters:
+        # 較低的值有更好的表現
+        normalized_SO = 1 - batter.SO / (SO_MAX - SO_MIN)
 
-    # Normalize the variables
-    normalized_variables = scaler.fit_transform([
-        [batter.avg_hit_speed, batter.max_hit_speed, batter.ev95plus, batter.barrels, batter.brl_percent]
-        for batter in batters
-    ])
+        # 較高的值有更好的表現
+        normalized_AVG_B = batter.AVG / (AVG_B_MAX - AVG_B_MIN)
+        normalized_OPS = batter.OPS / (OPS_MAX - OPS_MIN)
+        normalized_RBI = batter.RBI / (RBI_MAX - RBI_MIN)
+        normalized_BB = batter.BB / (BB_MAX - BB_MIN)
+        normalized_SB = batter.SB / (SB_MAX - SB_MIN)
 
-    # Compute the performance scores for all batters
-    performances = []
-    for i, batter in enumerate(batters):
-        performance = (0.35 * normalized_variables[i][0]) + \
-                      (0.25 * normalized_variables[i][1]) + \
-                      (0.2 * normalized_variables[i][2]) + \
-                      (0.1 * normalized_variables[i][3]) + \
-                      (0.1 * normalized_variables[i][4])
-        performances.append(performance)
+        # Calculate the performance for each pitcher
+        performance = (0.25 * normalized_AVG_B) + \
+                      (0.30 * normalized_OPS) + \
+                      (0.15 * normalized_RBI) + \
+                      (0.1 * normalized_BB) + \
+                      (0.1 * normalized_SO) + \
+                      (0.1 * normalized_SB)
 
-    # Calculate the total hitting score as the sum of the performances
-    total_hitting_score = np.sum(performances)
+        # Add the weighted performance score for the current pitcher to the list
+        all_performance.append(performance)
 
-    return total_hitting_score
+    # Let final score between 0～1
+    return sum(all_performance) / len(batters)
 
 
 def calculate_total_score(team1: Team, team2: Team, pitch_count: int) -> Tuple[float, float]:
-    team1_pitching_score = pitching_score(team1.pitchers, pitch_count)
+    p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers, pitch_count)
     team1_hitting_score = hitting_score(team1.batters)
-    team1_total_score = team1_pitching_score + team1_hitting_score
-    print(pitch_count, team1_pitching_score, team1_hitting_score)
-    print(' ')
+    team1_total_score = (0.8 * team1_pitching_score) + (0.2 * team1_hitting_score)
+    print('Team 1: ', pitch_count, p1_cnt, p1_cnt_pct, team1_pitching_score, team1_hitting_score)
 
-    team2_pitching_score = pitching_score(team2.pitchers, pitch_count)
+    p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers, pitch_count)
     team2_hitting_score = hitting_score(team2.batters)
-    team2_total_score = team2_pitching_score + team2_hitting_score
-    print(pitch_count, team2_pitching_score, team2_hitting_score)
-    print('------')
-
-
-    # team1_win_rate = team1_total_score/(team1_total_score+team2_total_score)
-    # team2_win_rate = team2_total_score/(team1_total_score+team2_total_score)
-
-    # team1_win_rate, team2_win_rate = normalize_scores(team1_total_score, team2_total_score)
+    team2_total_score = (0.8 * team2_pitching_score) + (0.2 * team2_hitting_score)
+    print('Team 2: ', pitch_count, p2_cnt, p2_cnt_pct, team2_pitching_score, team2_hitting_score)
 
     return team1_total_score, team2_total_score
 
@@ -187,20 +209,20 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
     team2_wins = 0
 
     for i in range(num_iterations):
-        random.seed() # Reset the random seed for each iteration
-        # TODO: pitch_count range should be checked
-        pitch_count = random.randint(81, 200) # 三位投手總投球數
-        # team1_win_rate, team2_win_rate = calculate_win_rate(team1, team2, pitch_count)
-        # if team1_win_rate > team2_win_rate:
-        #     team1_wins += 1
-        # else:
-        #     team2_wins += 1
+        random.seed()  # Reset the random seed for each iteration
 
+        # 一場比賽共有 27 個出局數，平均每局面對打者的球數通常在 15-20 之間（面對每名打者投球次數 3.5-4 之間，每局平均面對 4 名打者）
+        # 估計一場比賽所有投手可能總共需投出約 120-200 顆球
+        pitch_count = random.randint(120, 200)
+
+        print(f'\nSimulation {i+1} --------')
         team1_total_score, team2_total_score = calculate_total_score(team1, team2, pitch_count)
         if team1_total_score > team2_total_score:
             team1_wins += 1
+            print(f'Team 1, {team1.pitchers[0].country} win!')
         else:
             team2_wins += 1
+            print(f'Team 2, {team2.pitchers[0].country} win!')
 
     team1_win_rate = team1_wins / num_iterations
     team2_win_rate = team2_wins / num_iterations
@@ -225,7 +247,7 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
 
 if __name__ == "__main__":
 
-    countries = ["Australia", "Cuba", "Italy", "Japan", "Mexico", "Puerto Rico", "USA", "Venezuela"]
+    countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
 
     while True:
         print("Please choose two countries to match up:")
@@ -237,18 +259,17 @@ if __name__ == "__main__":
         else:
             break
 
-
     num_iterations = int(input("Enter the count of simulation: "))
-    print("\n")
 
     team1 = generate_team(countryA, 3, 9)
     team2 = generate_team(countryB, 3, 9)
 
-
+    # print(pitching_score(team1.pitchers, 300))
+    # print(hitting_score(team1.batters))
     team1_wins, team2_wins, team1_win_rate, team2_win_rate = monte_carlo_simulation(team1, team2, num_iterations)
 
-    print(f"Team 1 ({team1.pitchers[0].Country}) win times: {team1_wins}")
-    print(f"Team 2 ({team2.pitchers[0].Country}) win times: {team2_wins}")
+    print(f"\nTeam 1 ({team1.pitchers[0].country}) win times: {team1_wins}")
+    print(f"Team 2 ({team2.pitchers[0].country}) win times: {team2_wins}")
 
-    print(f"Team 1 ({team1.pitchers[0].Country}) win rate: {team1_win_rate}")
-    print(f"Team 2 ({team2.pitchers[0].Country}) win rate: {team2_win_rate}")
+    print(f"Team 1 ({team1.pitchers[0].country}) win rate: {team1_win_rate}")
+    print(f"Team 2 ({team2.pitchers[0].country}) win rate: {team2_win_rate}")

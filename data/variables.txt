@@ -1,0 +1,118 @@
+-- Pitchers --
+
+Wins
+- Credited to the pitcher whose team assumes a lead while such pitcher is in the game and does not relinquish such lead unless otherwise assigned by the official scorer.
+
+Losses
+- Credited to the pitcher in the game when his team relinquishes - and never regains - the lead.
+
+Earned Run Average
+- The average number of carned runs a pitcher allows per 9 innings.
+- (ER*9)/IP
+
+Games
+- Games in which the pitcher threw at least one pitch.
+
+Games Started
+- Games started by the pitcher, as defined by who threw the first pitch for their team.
+
+Complete Games
+- When a pitcher starts and finishes the entire game without relict.
+
+Shutouts
+- When a pitcher throws a complete game and allows no runs.
+
+Saves
+- Awarded to the relief pitcher who finishes a game for the winning team, under certain circumstances.
+
+Save Opportunities
+- Appearances in which a pitcher enters the game with a chance to earn a save.
+
+Innings Pitched
+- Number of putouts recorded while the pitcher was on the mound, divided by three, with 1 representing 1/3 of an inning and 2 representing 2/3.
+
+Hits
+- Hits allowed by a pitcher.
+
+Runs
+- Runs allowed by a pitcher.
+
+Earned Runs
+- Earned runs allowed by a pitcher.
+
+Home Runs
+- Home runs allowed by a pitcher.
+
+Hit Batsmen
+- When a batter is struck by a pitched ball which he is not attempting to hit.
+
+Walks
+- Walks allowed by a pitcher.
+
+Strikeouts
+- When a pitcher throws any combination of three swinging or looking strikes to a hitter.
+
+Walks and Hits Per Inning Pitched
+- The ratio of walks plus hits to innings pitched.
+- (W+H)/IP
+
+Batting Average Against
+- The rate of hits per at bat against a pitcher.
+- H/AB
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-- Batters --
+
+
+G (Games Played)
+- Games in which a player has appeared.
+
+AB (At Bats)
+- Trips to the plate that do not result in a walk, hit by pitch, sacrifice, or reach on interference.
+
+R (Runs)
+- When a base runner safely reaches home plate and scores.
+
+H (Hits)
+- When a batter reaches base safely on a fair ball unless the batter is deemed by the official scorer to have reached on an error or a fielder’s choice.
+
+2B (Doubles)
+- When a batter reaches on a hit and stops at second base or only advances farther than second base on an error or a fielder's attempt to put out another baserunner.
+
+3B (Triples)
+- When a batter reaches on a hit and stops at third base or only advances farther than third base on an error or a fielder's attempt to put out another baserunner.
+
+HR (Home Runs)
+- When a batter reaches on a hit, touches all bases, and scores a run without a putout recorded or the benefit of error.
+
+RBI (Runs Batted In)
+- Runs which score because of the batter's safe hit, sac bunt, sac fly, infield out or fielder's choice or is forced to score by a bases loaded walk, hit batter, or interference.
+
+BB (Walks)
+- When a batter is awarded first base after four balls have been called by the umpire or the opposing team opts to intentionally award the batter first base.
+
+SO (Strikeouts)
+- When the umpire calls three strikes on the batter.
+
+SB (Stolen Bases)
+- When the runner advances one base unaided by a hit, a putout, an error, a force-out, a fielder's choice, a passed ball, a wild pitch, or a balk.
+
+CS (Caught Stealing)
+- When a runner attempts to steal but is tagged out before safely attaining the next base.
+
+AVG (Batting Average)
+- The rate of hits per at bat.
+- H/AB
+
+OBP (On-Base Percentage)
+- The rate at which a batter reached base in his plate appearances.
+- (H+BB+HBP)/(AB+BB+HBP+SF)
+
+SLG (Slugging Percentage)
+- The rate of total bases per at bat.
+- (1B+2B×2+3Bx3+HR×4)/AB
+
+OPS (On-Base Plus Slugging)
+- The sum of on-base percentage and slugging percentage.
+- OBP+SLG
