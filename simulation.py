@@ -90,6 +90,7 @@ SB_MAX = 3
 
 
 def generate_players(player_type, country, num_of_players):
+    # TODO: 先發投手要是最強的
     if player_type not in ['Pitchers', 'Batters']:
         raise ValueError("Invalid player type. Choose either 'Pitcher' or 'Batter'.")
 
@@ -158,7 +159,7 @@ def pitching_score(pitchers: List[Pitcher], pitch_count: int):
 
     # Let final score between 0～1
     final_score = sum(weighted_performance) / len(pitchers)
-    return p1, round(p1/pitch_count, 2), final_score
+    return p1, round(p1 / pitch_count, 2), final_score
 
 
 # TODO: value generated is not randomized rn, need to be fixed (Batter could be random generated)
@@ -190,23 +191,27 @@ def hitting_score(batters: List[Batter]) -> float:
     return sum(all_performance) / len(batters)
 
 
-def calculate_total_score(team1: Team, team2: Team, pitch_count: int) -> Tuple[float, float]:
+def calculate_total_score(team1: Team, team2: Team, pitch_count: int):
     p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers, pitch_count)
     team1_hitting_score = hitting_score(team1.batters)
     team1_total_score = (0.8 * team1_pitching_score) + (0.2 * team1_hitting_score)
-    print('Team 1: ', pitch_count, p1_cnt, p1_cnt_pct, team1_pitching_score, team1_hitting_score)
 
     p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers, pitch_count)
     team2_hitting_score = hitting_score(team2.batters)
     team2_total_score = (0.8 * team2_pitching_score) + (0.2 * team2_hitting_score)
-    print('Team 2: ', pitch_count, p2_cnt, p2_cnt_pct, team2_pitching_score, team2_hitting_score)
 
-    return team1_total_score, team2_total_score
+    return team1_total_score, team2_total_score, p1_cnt, p2_cnt
 
 
 def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tuple[int, int, float, float]:
     team1_wins = 0
     team2_wins = 0
+    p1_cnt_sum = 0
+    p2_cnt_sum = 0
+    p1_cnt_pct_sum = 0
+    p2_cnt_pct_sum = 0
+
+    print(f'\n{"sim":<10}{"t1-Country":<15}{"t1-p1_cnt":<15}{"t1-p1_cnt_%":<15}{"t1-result":<15}{"|":<5}{"t2-Country":<15}{"t2-p1_cnt":<15}{"t2-p1_cnt_%":<15}{"t2-result":<15}')
 
     for i in range(num_iterations):
         random.seed()  # Reset the random seed for each iteration
@@ -215,33 +220,42 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
         # 估計一場比賽所有投手可能總共需投出約 120-200 顆球
         pitch_count = random.randint(120, 200)
 
-        print(f'\nSimulation {i+1} --------')
-        team1_total_score, team2_total_score = calculate_total_score(team1, team2, pitch_count)
+        team1_total_score, team2_total_score, p1_cnt, p2_cnt = calculate_total_score(team1, team2, pitch_count)
+        p1_cnt_sum += p1_cnt
+        p2_cnt_sum += p2_cnt
+        p1_cnt_pct = p1_cnt / pitch_count
+        p2_cnt_pct = p2_cnt / pitch_count
+        p1_cnt_pct_sum += p1_cnt_pct
+        p2_cnt_pct_sum += p2_cnt_pct
+
         if team1_total_score > team2_total_score:
             team1_wins += 1
-            print(f'Team 1, {team1.pitchers[0].country} win!')
+            result = 'win'
         else:
             team2_wins += 1
-            print(f'Team 2, {team2.pitchers[0].country} win!')
+            result = 'lose'
+
+        print(f'{(i + 1):<10}{team1.pitchers[0].country:<15}{p1_cnt:<15}{round(p1_cnt_pct, 2):<15}{result:<15}{"|":<5}{team2.pitchers[0].country:<15}{p2_cnt:<15}{round(p2_cnt_pct, 2):<15}{"win" if result == "lose" else "lose":<15}')
 
     team1_win_rate = team1_wins / num_iterations
     team2_win_rate = team2_wins / num_iterations
 
+    p1_avg_cnt = p1_cnt_sum / num_iterations
+    p2_avg_cnt = p2_cnt_sum / num_iterations
+
+    p1_avg_cnt_pct = p1_cnt_pct_sum / num_iterations
+    p2_avg_cnt_pct = p2_cnt_pct_sum / num_iterations
+
+    print("\nSummary Statistics")
+    print("simulation times:", num_iterations)
+    print(f'{"Team 1":<20}{" ":<10}{" ":<10}{" ":<10}{" ":<15}{" ":<20}{"Team 2":<20}')
+    print(
+        f'{"avg_1st_p_count":<20}{"avg_1st_p_cnt_%":<20}{"win_times":<15}{"lose_times":<15}{"win_rate":<15}{"avg_1st_p_count":<20}{"avg_1st_p_cnt_%":<20}{"win_times":<15}{"lose_times":<15}{"win_rate":<15}')
+    print(
+        f'{round(p1_avg_cnt, 2):<20}{round(p1_avg_cnt_pct, 2):<20}{team1_wins:<15}{team2_wins:<15}{round(team1_win_rate, 3):<15}{round(p2_avg_cnt, 2):<20}{round(p2_avg_cnt_pct, 2):<20}{team2_wins:<15}{team1_wins:<15}{round(team2_win_rate, 3):<15}')
+
     return team1_wins, team2_wins, team1_win_rate, team2_win_rate
 
-
-# TODO: define a function that print all the required data
-# def generate_report():
-# output:    Team 1                                                         Team 2
-# sim_index  country   tot_p_cnt   1st_p_count    1st_p_cnt_pct   result    country   tot_p_cnt   1st_p_count   1st_p_cnt_ pct   result
-# 1          USA       300         80             0.27            win        Japan     400         90            0.225           lose
-# 2          USA       345         75             0.22            lose       Japan     325         85            0.26            win
-# ....
-# Summary Statistics
-# simulation times: 1000
-# Team 1                                                        Team 2
-# avg_1st_p_count    win_times     lose_times     win_rate      avg_1st_p_count    win_times     lose_times     win_rate
-# 80                 543           457            0.543         75                 457           543            0.457
 
 
 
@@ -267,9 +281,3 @@ if __name__ == "__main__":
     # print(pitching_score(team1.pitchers, 300))
     # print(hitting_score(team1.batters))
     team1_wins, team2_wins, team1_win_rate, team2_win_rate = monte_carlo_simulation(team1, team2, num_iterations)
-
-    print(f"\nTeam 1 ({team1.pitchers[0].country}) win times: {team1_wins}")
-    print(f"Team 2 ({team2.pitchers[0].country}) win times: {team2_wins}")
-
-    print(f"Team 1 ({team1.pitchers[0].country}) win rate: {team1_win_rate}")
-    print(f"Team 2 ({team2.pitchers[0].country}) win rate: {team2_win_rate}")
