@@ -95,7 +95,6 @@ SB_MAX = 3
 
 
 def generate_players(player_type, country, num_of_players):
-    # TODO: 先發投手要是最強的
     if player_type not in ['Pitchers', 'Batters']:
         raise ValueError("Invalid player type. Choose either 'Pitcher' or 'Batter'.")
 
@@ -134,17 +133,21 @@ def pitching_score(pitchers: List[Pitcher], pitch_count: int):
     # Sort pitchers by performance
     pitchers.sort(key=lambda x: (x.ERA, x.WHIP, x.AVG, -x.IP, -x.SO))
 
-    # Select the first pitcher with the highest performance as p1
-    p1 = pitchers[0]
-    p1_pitch_count = random.randint(45, pitch_count - 45)
-
-    # Calculate pitch count for p2 and p3
-    remaining_pitch_count = pitch_count - p1_pitch_count
-    p2_pitch_count = random.randint(0, remaining_pitch_count)
-    p3_pitch_count = remaining_pitch_count - p2_pitch_count
+    # # Select the first pitcher with the highest performance as p1
+    # p1_pitch_count = random.randint(45, pitch_count - 45)
+    #
+    # # Calculate pitch count for p2 and p3
+    # remaining_pitch_count = pitch_count - p1_pitch_count
+    # p2_pitch_count = random.randint(0, remaining_pitch_count)
+    # p3_pitch_count = remaining_pitch_count - p2_pitch_count
+    p1 = random.randint(45, pitch_count - 45)  # 先發投手用球數
+    p3 = random.randint(0, 15)  # 後援投手用球數
+    p2 = random.randint(0, pitch_count - p1 - p3)  # 中繼投手用球數
 
     # Calculate pitch count percentage for each pitcher
-    pitch_for_each = [p1_pitch_count, p2_pitch_count, p3_pitch_count]
+    # pitch_for_each = [p1_pitch_count, p2_pitch_count, p3_pitch_count]
+    pitch_for_each = [p1, p2, p3]
+
     pitch_count_percentage = [count / pitch_count for count in pitch_for_each]
 
     # Calculate weighted performance score for each pitcher
@@ -164,7 +167,9 @@ def pitching_score(pitchers: List[Pitcher], pitch_count: int):
 
     # Calculate final score
     final_score = sum(weighted_performance) / len(pitchers)
-    return p1_pitch_count, round(p1_pitch_count / pitch_count, 2), final_score
+    # return p1_pitch_count, round(p1_pitch_count / pitch_count, 2), final_score
+    return p1, round(p1 / pitch_count, 2), final_score
+
 
 
 def hitting_score(batters: List[Batter]) -> float:
@@ -198,11 +203,11 @@ def hitting_score(batters: List[Batter]) -> float:
 def calculate_total_score(team1: Team, team2: Team, pitch_count: int):
     p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers, pitch_count)
     team1_hitting_score = hitting_score(team1.batters)
-    team1_total_score = (0.8 * team1_pitching_score) + (0.2 * team1_hitting_score)
+    team1_total_score = (0.7 * team1_pitching_score) + (0.3 * team1_hitting_score)
 
     p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers, pitch_count)
     team2_hitting_score = hitting_score(team2.batters)
-    team2_total_score = (0.8 * team2_pitching_score) + (0.2 * team2_hitting_score)
+    team2_total_score = (0.7 * team2_pitching_score) + (0.3 * team2_hitting_score)
 
     return team1_total_score, team2_total_score, p1_cnt, p2_cnt
 
