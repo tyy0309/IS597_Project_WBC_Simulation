@@ -107,10 +107,10 @@ def generate_players(player_type, country, num_of_players):
     random_players = players.sample(num_of_players)
     players_list = []
 
-    for _, player in random_players.iterrows():
-        player_list = list(player)
-        reordered_player = [player_list[0], player_list[1], player_list[2], player_list[-1], *player_list[3:-1]]
-        players_list.append(reordered_player)
+    sorted_players = sorted(random_players.iterrows(), key=lambda x: x[1][-1])
+
+    for _, player in sorted_players:
+        players_list.append(list(player))
 
     return players_list
 
@@ -277,7 +277,8 @@ if __name__ == "__main__":
 
     team1 = generate_team(countryA, 3, 9)
     team2 = generate_team(countryB, 3, 9)
-
+    # print(team1.pitchers)
+    # print(team1.batters)
     # print(pitching_score(team1.pitchers, 300))
     # print(hitting_score(team1.batters))
     team1_wins, team2_wins, team1_win_rate, team2_win_rate = monte_carlo_simulation(team1, team2, num_iterations)
