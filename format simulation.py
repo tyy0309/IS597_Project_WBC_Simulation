@@ -94,17 +94,27 @@ def generate_team(country, num_pitchers, num_batters):
     return Team(pitchers, batters)
 
 
-def generate_pools(countries, num_pools=2):
+def generate_pools(countries, num_pools=None):
+    if len(countries) < 4:
+        raise ValueError("Number of countries should be at least 4")
+
+    if num_pools is None:
+        num_pools = len(countries) // 4
+
     if len(countries) < num_pools*4:
-        raise ValueError("Number of countries should be at least 8 for 2 pools of 4 countries each.")
+        raise ValueError("Number of countries is wrong")
 
     pools = []
     for i in range(num_pools):
         pool = random.sample(countries, k=4)
         pools.append(pool)
 
-    standings = {'pool_A': {country: 0 for country in pools[0]},
-                 'pool_B': {country: 0 for country in pools[1]}}
+    # standings = {'pool_A': {country: 0 for country in pools[0]},
+    #              'pool_B': {country: 0 for country in pools[1]}}
+    standings = {}
+    for j in range(num_pools):
+        pool_name = f'pool_{chr(65+j)}'
+        standings[pool_name] = {country: 0 for country in pools[j]}
 
     for pool_idx, pool in enumerate(pools):
         for i in range(len(pool)):
@@ -123,8 +133,12 @@ def generate_pools(countries, num_pools=2):
                     team_j_defensive_rate = team_j_runs_allowed / team_j_defensive_outs
 
                     if team_i_score > team_j_score:
+                        # print("---------")
+                        # print(pool[j], standings[f'pool_{chr(65+pool_idx)}'])
                         standings[f'pool_{chr(65+pool_idx)}'][pool[i]] += 1
                     elif team_j_score > team_i_score:
+                        # print("----------")
+                        # print(pool[j], standings[f'pool_{chr(65+pool_idx)}'])
                         standings[f'pool_{chr(65+pool_idx)}'][pool[j]] += 1
 
                     # TODO: Pool tiebreakers
@@ -136,13 +150,22 @@ def generate_pools(countries, num_pools=2):
 
     # Find the teams with the highest number of wins
     top_teams = []
-    for pool in ['pool_A', 'pool_B']:
-            wins = [(team, wins) for team, wins in standings[pool].items() if wins > 0]
-            sorted_wins = sorted(wins, key=lambda x: (-x[1], -get_defensive_rate(x[0])))
-            top_teams.extend([team for team, wins in sorted_wins[:2]])
+    for pool in standings.keys():
+        wins = [(team, wins) for team, wins in standings[pool].items() if wins > 0]
+        sorted_wins = sorted(wins, key=lambda x: (-x[1], -get_defensive_rate(x[0])))
+        top_teams.extend([team for team, wins in sorted_wins[:2]])
 
-    print(standings, top_teams)
-    return standings, top_teams
+    if len(top_teams) > 2:
+        print("First round: ")
+        print(standings)
+        print("Countries get into the second round: ", top_teams)
+        new_standings, new_top_teams = generate_pools(top_teams, num_pools=1)
+        return new_standings, new_top_teams
+    else:
+        print("\nSecond round: ")
+        print(standings)
+        print("Countries get into the final round: ", top_teams)
+        return standings, top_teams
 
 
 def get_defensive_rate(team):
