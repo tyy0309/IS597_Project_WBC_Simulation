@@ -1,62 +1,62 @@
 -- Pitchers --
 
-Wins
+W (Wins)
 - Credited to the pitcher whose team assumes a lead while such pitcher is in the game and does not relinquish such lead unless otherwise assigned by the official scorer.
 
-Losses
+L (Losses)
 - Credited to the pitcher in the game when his team relinquishes - and never regains - the lead.
 
-Earned Run Average
+ERA (Earned Run Average)
 - The average number of carned runs a pitcher allows per 9 innings.
 - (ER*9)/IP
 
-Games
+G (Games)
 - Games in which the pitcher threw at least one pitch.
 
-Games Started
+GS (Games Started)
 - Games started by the pitcher, as defined by who threw the first pitch for their team.
 
-Complete Games
+CG (Complete Games)
 - When a pitcher starts and finishes the entire game without relict.
 
-Shutouts
+SHO (Shutouts)
 - When a pitcher throws a complete game and allows no runs.
 
-Saves
+SV (Saves)
 - Awarded to the relief pitcher who finishes a game for the winning team, under certain circumstances.
 
-Save Opportunities
+SVO (Save Opportunities)
 - Appearances in which a pitcher enters the game with a chance to earn a save.
 
-Innings Pitched
+IP (Innings Pitched)
 - Number of putouts recorded while the pitcher was on the mound, divided by three, with 1 representing 1/3 of an inning and 2 representing 2/3.
 
-Hits
+H (Hits)
 - Hits allowed by a pitcher.
 
-Runs
+R (Runs)
 - Runs allowed by a pitcher.
 
-Earned Runs
+ER (Earned Runs)
 - Earned runs allowed by a pitcher.
 
-Home Runs
+HR (Home Runs)
 - Home runs allowed by a pitcher.
 
-Hit Batsmen
+HB (Hit Batsmen)
 - When a batter is struck by a pitched ball which he is not attempting to hit.
 
-Walks
+BB (Walks)
 - Walks allowed by a pitcher.
 
-Strikeouts
+SO (Strikeouts)
 - When a pitcher throws any combination of three swinging or looking strikes to a hitter.
 
-Walks and Hits Per Inning Pitched
+WHIP (Walks and Hits Per Inning Pitched)
 - The ratio of walks plus hits to innings pitched.
 - (W+H)/IP
 
-Batting Average Against
+AVG (Batting Average Against)
 - The rate of hits per at bat against a pitcher.
 - H/AB
 

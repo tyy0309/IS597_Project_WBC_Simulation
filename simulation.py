@@ -9,6 +9,7 @@ import numpy as np
 from typing import List, Tuple
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
+import csv
 import matplotlib.pyplot as plt
 
 
@@ -128,87 +129,130 @@ def generate_team(country, num_pitchers, num_batters):
 
     return Team(pitchers, batters)
 
-
-def pitching_score(pitchers: List[Pitcher], pitch_count: int):
+def generate_pitcher_games_records(pitchers: List[Pitcher], sim_times):
     # Sort pitchers by performance
     pitchers.sort(key=lambda x: (x.ERA, x.WHIP, x.AVG, -x.IP, -x.SO))
 
-    # # Select the first pitcher with the highest performance as p1
-    # p1_pitch_count = random.randint(45, pitch_count - 45)
-    #
-    # # Calculate pitch count for p2 and p3
-    # remaining_pitch_count = pitch_count - p1_pitch_count
-    # p2_pitch_count = random.randint(0, remaining_pitch_count)
-    # p3_pitch_count = remaining_pitch_count - p2_pitch_count
+    for pitcher in pitchers:
+        pitcher.random_ERA = np.random.normal(pitcher.ERA, 0.2, sim_times)
+        pitcher.random_WHIP = np.random.normal(pitcher.WHIP, 0.05, sim_times)
+        pitcher.random_BAA = np.random.normal(pitcher.AVG, 0.01, sim_times)
+
+        pitcher.random_ERA = np.clip(pitcher.random_ERA, 0, None)
+        pitcher.random_WHIP = np.clip(pitcher.random_WHIP, 0, None)
+        pitcher.random_BAA = np.clip(pitcher.random_BAA, 0, 1)
+
+    country = pitchers[0].country
+    with open(f'random_generated/pitcher_records_{country}.csv', mode='w', newline='') as output_file:
+        fieldnames = ['player', 'team', 'Random_ERA', 'Random_WHIP', 'Random_BAA']
+        writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for pitcher in pitchers:
+            for i in range(sim_times):
+                writer.writerow({
+                    'player': pitcher.player,
+                    'team': pitcher.country,
+                    'Random_ERA': pitcher.random_ERA[i],
+                    'Random_WHIP': pitcher.random_WHIP[i],
+                    'Random_BAA': pitcher.random_BAA[i],
+                })
+
+def record_to_dict(filename):
+    with open(filename, newline='') as f:
+        reader = csv.reader(f)
+        next(reader)
+        data = {}
+        for row in reader:
+            player = row[0]
+            if player not in data:
+                data[player] = []
+            data[player].append(row[1:])
+
+    return data
+
+
+def pitching_score(country: str, pitch_count: int, sim_index):
+
     p1 = random.randint(45, pitch_count - 45)  # 先發投手用球數
-    p3 = random.randint(0, 15)  # 後援投手用球數
-    p2 = random.randint(0, pitch_count - p1 - p3)  # 中繼投手用球數
+    p3 = random.randint(5, 15)  # 後援投手用球數
+    p2 = random.randint(5, pitch_count - p1 - p3)  # 中繼投手用球數
 
-    # Calculate pitch count percentage for each pitcher
-    # pitch_for_each = [p1_pitch_count, p2_pitch_count, p3_pitch_count]
     pitch_for_each = [p1, p2, p3]
-
-    pitch_count_percentage = [count / pitch_count for count in pitch_for_each]
-
-    # Calculate weighted performance score for each pitcher
+    # 100%?
+    pitch_count_percentage = [count / (p1+p2+p3) for count in pitch_for_each]
+    pitcher_data = record_to_dict(f'random_generated/pitcher_records_{country}.csv')
     weighted_performance = []
-    for percentage, pitcher in zip(pitch_count_percentage, pitchers):
-        normalized_ERA = 1 - pitcher.ERA / (ERA_MAX - ERA_MIN)
-        normalized_WHIP = 1 - pitcher.WHIP / (WHIP_MAX - WHIP_MIN)
-        normalized_BAA = 1 - pitcher.AVG / (AVG_MAX - AVG_MIN)
-        normalized_IP = pitcher.IP / (IP_MAX - IP_MIN)
-        normalized_K = pitcher.SO / (K_MAX - K_MIN)
-        performance = (0.3 * normalized_ERA) + \
-                      (0.25 * normalized_WHIP) + \
-                      (0.15 * normalized_BAA) + \
-                      (0.1 * normalized_IP) + \
-                      (0.2 * normalized_K)
+    # {player: [[aus,0.3,0.2,0.1],[aus, ..]]}
+    for percentage, player in zip(pitch_count_percentage, pitcher_data.keys()):
+        normalized_ERA = 1 - float(pitcher_data[player][sim_index][1]) / (ERA_MAX - ERA_MIN)
+        normalized_WHIP = 1 - float(pitcher_data[player][sim_index][2]) / (WHIP_MAX - WHIP_MIN)
+        normalized_BAA = 1 - float(pitcher_data[player][sim_index][3]) / (AVG_MAX - AVG_MIN)
+
+        performance = (0.4 * normalized_ERA) + \
+                      (0.35 * normalized_WHIP) + \
+                      (0.25 * normalized_BAA)
+
         weighted_performance.append(percentage * performance)
 
-    # Calculate final score
-    final_score = sum(weighted_performance) / len(pitchers)
-    # return p1_pitch_count, round(p1_pitch_count / pitch_count, 2), final_score
+    final_score = sum(weighted_performance) / 3
     return p1, round(p1 / pitch_count, 2), final_score
 
 
+def generate_batter_games_records(batters: List[Batter], sim_times):
 
-def hitting_score(batters: List[Batter]) -> float:
-    all_performance = []
     for batter in batters:
-        # 較低的值有更好的表現
-        normalized_SO = 1 - batter.SO / (SO_MAX - SO_MIN)
+        batter.random_BA = np.random.normal(batter.AVG, 0.02, sim_times)
+        batter.random_OPS = np.random.normal(batter.OPS, 0.03, sim_times)
 
-        # 較高的值有更好的表現
-        normalized_AVG_B = batter.AVG / (AVG_B_MAX - AVG_B_MIN)
-        normalized_OPS = batter.OPS / (OPS_MAX - OPS_MIN)
-        normalized_RBI = batter.RBI / (RBI_MAX - RBI_MIN)
-        normalized_BB = batter.BB / (BB_MAX - BB_MIN)
-        normalized_SB = batter.SB / (SB_MAX - SB_MIN)
+        batter.random_BA = np.clip(batter.random_BA, 0, 1)
+        batter.random_OPS = np.clip(batter.random_OPS, 0, 1.5)
+
+    country = batters[0].country
+    with open(f'random_generated/batter_records_{country}.csv', mode='w', newline='') as output_file:
+        fieldnames = ['player', 'team', 'Random_BA', 'Random_OPS']
+        writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for batter in batters:
+            for i in range(sim_times):
+                writer.writerow({
+                    'player': batter.player,
+                    'team': batter.country,
+                    'Random_BA': batter.random_BA[i],
+                    'Random_OPS': batter.random_OPS[i]
+                })
+
+def hitting_score(country, sim_index) -> float:
+
+    batter_data = record_to_dict(f'random_generated/batter_records_{country}.csv')
+    all_performance = []
+
+    for player in batter_data.keys():
+        normalized_BA = float(batter_data[player][sim_index][1]) / (AVG_B_MAX - AVG_B_MIN)
+        normalized_OPS = float(batter_data[player][sim_index][2]) / (OPS_MAX - OPS_MIN)
 
         # Calculate the performance for each pitcher
-        performance = (0.25 * normalized_AVG_B) + \
-                      (0.30 * normalized_OPS) + \
-                      (0.15 * normalized_RBI) + \
-                      (0.1 * normalized_BB) + \
-                      (0.1 * normalized_SO) + \
-                      (0.1 * normalized_SB)
+        performance = (0.5 * normalized_BA) + \
+                      (0.5 * normalized_OPS)
 
         # Add the weighted performance score for the current pitcher to the list
         all_performance.append(performance)
 
     # Let final score between 0～1
-    return sum(all_performance) / len(batters)
+    return sum(all_performance) / 9
 
 
-def calculate_total_score(team1: Team, team2: Team, pitch_count: int):
-    p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers, pitch_count)
-    team1_hitting_score = hitting_score(team1.batters)
-    team1_total_score = (0.8 * team1_pitching_score) + (0.2 * team1_hitting_score)
+def calculate_total_score(team1: Team, team2: Team, pitch_count: int, sim_index):
+    p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers[0].country, pitch_count, sim_index)
+    team1_hitting_score = hitting_score(team1.batters[0].country, sim_index)
+    team1_total_score = (0.7 * team1_pitching_score) + (0.3 * team1_hitting_score)
 
-    p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers, pitch_count)
-    team2_hitting_score = hitting_score(team2.batters)
-    team2_total_score = (0.8 * team2_pitching_score) + (0.2 * team2_hitting_score)
-
+    p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers[0].country, pitch_count, sim_index)
+    team2_hitting_score = hitting_score(team2.batters[0].country, sim_index)
+    team2_total_score = (0.7 * team2_pitching_score) + (0.3 * team2_hitting_score)
+    print('\n\nTEAM1', team1_pitching_score, team1_hitting_score)
+    print('TEAM2', team2_pitching_score, team2_hitting_score)
     return team1_total_score, team2_total_score, p1_cnt, p2_cnt
 
 
@@ -221,10 +265,10 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
     print(f'\n{"sim":<10}{"t1-Country":<15}{"t1-p1_cnt":<15}{"t1-p1_cnt_%":<15}{"t1-result":<15}{"|":<5}{"t2-Country":<15}{"t2-p1_cnt":<15}{"t2-p1_cnt_%":<15}{"t2-result":<15}')
 
     for i in range(num_iterations):
-        random.seed()  # Reset the random seed for each iteration
+        # random.seed()  # Reset the random seed for each iteration
         pitch_count = random.randint(120, 200)
 
-        team1_total_score, team2_total_score, p1_cnt, p2_cnt = calculate_total_score(team1, team2, pitch_count)
+        team1_total_score, team2_total_score, p1_cnt, p2_cnt = calculate_total_score(team1, team2, pitch_count, i)
         p1_cnt_pct = p1_cnt / pitch_count
         p2_cnt_pct = p2_cnt / pitch_count
 
@@ -252,11 +296,10 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
     print("\nSummary Statistics")
     print("simulation times:", num_iterations)
     print(f'{"Team 1":<20}{" ":<10}{" ":<10}{" ":<15}{"Team 2":<20}')
-    print(f'{"P(A|B)":<10}{"win_times":<15}{"lose_times":<15}{"win_rate/P(B)":<15}{"P(C|D)":<10}{"win_times":<15}{"lose_times":<15}{"win_rate/P(D)":<15}')
+    print(f'{"P(A|B)":<10}{"win_times":<15}{"lose_times":<15}{"win_rate=P(B)":<15}{"P(C|D)":<10}{"win_times":<15}{"lose_times":<15}{"win_rate=P(D)":<15}')
     print(f'{round(p_A_given_B, 2):<10}{team1_wins:<15}{team2_wins:<15}{round(team1_win_rate, 2):<15}{round(p_C_given_D, 2):<10}{team2_wins:<15}{team1_wins:<15}{round(team2_win_rate, 2):<15}')
 
     return team1_wins, team2_wins, team1_win_rate, team2_win_rate
-
 
 
 # Creating a plot to validate monte_carlo_simulation function
@@ -290,6 +333,14 @@ if __name__ == "__main__":
 
     team1 = generate_team(countryA, 3, 9)
     team2 = generate_team(countryB, 3, 9)
+
+    generate_pitcher_games_records(team1.pitchers, num_iterations)
+    generate_batter_games_records(team1.batters, num_iterations)
+
+    generate_pitcher_games_records(team2.pitchers, num_iterations)
+    generate_batter_games_records(team2.batters, num_iterations)
+
+    # print(calculate_total_score(team1, team2, 300, 1))
     # print(team1.pitchers)
     # print(team1.batters)
     # print(pitching_score(team1.pitchers, 300))
