@@ -28,6 +28,7 @@ def generate_pools(countries, num_pools=None):
     pools = []
     selected_countries = set()
     for i in range(num_pools):
+        # TODO: get random countries
         available_countries = list(set(countries) - selected_countries)
         pool = random.sample(available_countries, k=4)
         pools.append(pool)
@@ -63,6 +64,7 @@ def get_defensive_rate(team):
 
 
 def round_robin_game(pools):
+    # TODO: pools need to be random
     num_pools = len(pools)
     standings = {}
     for j in range(num_pools):
@@ -111,6 +113,58 @@ def round_robin_game(pools):
         return standings, top_teams
 
 
+def double_elimination_game(pools):
+
+    standings = {country: 0 for pool in pools for country in pool}
+
+    # play the first round matches
+    winners = []
+    losers = []
+    for pool in pools:
+        # print("pool:", pool)
+        pool_winners = []
+        pool_losers = []
+        # shuffle the pool before playing matches
+        # TODO: define how to pick the two countries
+        random.shuffle(pool)
+        matches = [(pool[i], pool[i + 1]) for i in range(0, 3, 2)]
+        # print("matches:", matches)
+        for match in matches:
+            # TODO: define the winning formula based on the datasets
+            winner = random.choice(match)
+            # get the other country in the match as loser
+            loser = match[0] if winner == match[1] else match[1]
+            pool_winners.append(winner)
+            pool_losers.append(loser)
+            standings[winner] += 1
+        # print("pool_winners: ", pool_winners)
+        # print("pool_losers: ", pool_losers, "\n")
+        winners.extend(pool_winners)
+        losers.extend(pool_losers)
+
+    print("winners: ", winners)
+    print("losers: ", losers)
+
+    # play the second round matches
+
+
+    # winners_bracket = winners
+    # losers_bracket = losers
+    # print("winners_bracket: ", winners_bracket)
+    # print("losers_bracket: ", losers_bracket)
+    # wb_matches = [(winners_bracket[i], winners_bracket[j]) for i in range(4) for j in range(i + 1, 4)]
+    # lb_matches = [(losers_bracket[i], losers_bracket[j]) for i in range(4) for j in range(i + 1, 4)]
+    # print("wb_matches: ", wb_matches)
+    # print("lb_matches: ", lb_matches)
+    # for match in wb_matches:
+    #     # TODO: define the winning formula based on the datasets
+    #     winner = random.choice(match)
+
+    return standings
+
+
+
+
 def round_robin_simulation(pools, num_sims):
     accumulated_results = []
     for sim in range(num_sims):
@@ -126,5 +180,6 @@ def round_robin_simulation(pools, num_sims):
 if __name__ == "__main__":
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
     pools = generate_pools(countries, None)
-    results = round_robin_simulation(pools, 100)
+    # results = round_robin_simulation(pools, 100)
+    db = double_elimination_game(pools)
 
