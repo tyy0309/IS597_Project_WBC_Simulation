@@ -64,7 +64,6 @@ def get_defensive_rate(team):
 
 
 def round_robin_game(pools):
-    # TODO: pools need to be random
     num_pools = len(pools)
     standings = {}
     for j in range(num_pools):
@@ -165,11 +164,12 @@ def double_elimination_game(pools):
 
 
 
-def round_robin_simulation(pools, num_sims):
+def round_robin_simulation(num_sims):
     accumulated_results = []
     for sim in range(num_sims):
         print("------------------------------------------------------------------------------------------------\n")
         print(f"Running simulation {sim + 1} of {num_sims}...")
+        pools = generate_pools(countries, None)
         standings, top_teams = round_robin_game(pools)
         accumulated_results.append((standings, top_teams))
     return accumulated_results
@@ -179,7 +179,8 @@ def round_robin_simulation(pools, num_sims):
 
 if __name__ == "__main__":
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
-    pools = generate_pools(countries, None)
-    # results = round_robin_simulation(pools, 100)
-    db = double_elimination_game(pools)
+    # pools = generate_pools(countries, None)
+    # print(pools)
+    results = round_robin_simulation(3)
+    # db = double_elimination_game(pools)
 
