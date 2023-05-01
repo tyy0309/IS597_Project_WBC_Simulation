@@ -35,6 +35,7 @@ SO_MAX = 13
 SB_MIN = 0
 SB_MAX = 3
 
+
 def get_score(country_name):
     team = generate_team(country_name, 3, 9)
 
@@ -102,24 +103,6 @@ def get_defensive_rate(team):
     return team_runs_allowed / team_defensive_outs
 
 
-# def tiebreaker(pool, pool_idx, team_i, team_j, standings):
-#     pool_name = f'pool_{chr(65+pool_idx)}'
-#     pool_scores = [standings[pool_name][team] for team in pool]
-#     print("pool score: ", pool_scores)
-#     if pool_scores.count(pool_scores[0]) == 3:
-#         team_i_defensive_rate = get_defensive_rate(team_i)
-#         team_j_defensive_rate = get_defensive_rate(team_j)
-#
-#         print("-------------------------------------------")
-#         print(team_i, team_i_defensive_rate, team_j, team_j_defensive_rate)
-#
-#         if team_i_defensive_rate < team_j_defensive_rate:
-#             standings[pool_name][team_i] += 1
-#         else:
-#             standings[pool_name][team_j] += 1
-#     return
-
-
 def round_robin_game(pools):
     num_pools = len(pools)
     standings = {}
@@ -167,6 +150,7 @@ def round_robin_game(pools):
         print("Countries get into the final round: ", top_teams)
         return standings, top_teams
 
+
 def final_game(top_2_teams: list):
     team1_score = get_score(top_2_teams[0])
     team2_score = get_score(top_2_teams[1])
@@ -179,52 +163,94 @@ def final_game(top_2_teams: list):
         # TODO: Tiebreaker?
         return "It's a tie!"
 
+
+# 1 vs 1 選出贏家輸家
+def play_match(countries):
+    # TODO: define the winning formula based on the datasets
+    winner = random.choice(countries)
+    # get the other country in the match as loser
+    loser = countries[0] if winner == countries[1] else countries[1]
+    return winner, loser
+
+
+# 將國家放入winner, loser bracket內
+def play_round(countries):
+    # standings = {country: 0 for pool in pools for country in pool}
+    winners = []
+    losers = []
+    random.shuffle(countries)
+    for i in range(0, len(countries), 2):
+        match = (countries[i], countries[i+1])
+        print("match: ", match)
+        winner, loser = play_match(match)
+        winners.append(winner)
+        losers.append(loser)
+
+    return winners, losers
+
+
+def update_standings(winners, losers, standings):
+    for country in winners:
+        standings[country]["wins"] += 1
+    for country in losers:
+        standings[country]["losses"] += 1
+
+
+def print_round_results(round_name, winners, losers, standings):
+    print(f"\n{round_name}")
+    print("winners: ", winners)
+    print("losers: ", losers)
+    print("Standings after ", round_name, ": ")
+    print(standings)
+
+
 def double_elimination_game(pools):
 
-    standings = {country: 0 for pool in pools for country in pool}
+    standings = {country: {"wins": 0, "losses": 0} for pool in pools for country in pool}
 
     # play the first round matches
     winners = []
     losers = []
     for pool in pools:
-        # print("pool:", pool)
-        pool_winners = []
-        pool_losers = []
-        # shuffle the pool before playing matches
         # TODO: define how to pick the two countries
         random.shuffle(pool)
-        matches = [(pool[i], pool[i + 1]) for i in range(0, 3, 2)]
-        # print("matches:", matches)
-        for match in matches:
-            # TODO: define the winning formula based on the datasets
-            winner = random.choice(match)
-            # get the other country in the match as loser
-            loser = match[0] if winner == match[1] else match[1]
-            pool_winners.append(winner)
-            pool_losers.append(loser)
-            standings[winner] += 1
-        # print("pool_winners: ", pool_winners)
-        # print("pool_losers: ", pool_losers, "\n")
+        pool_winners, pool_losers = play_round(pool)
         winners.extend(pool_winners)
         losers.extend(pool_losers)
 
-    print("winners: ", winners)
-    print("losers: ", losers)
+    # update standings after first round
+    update_standings(winners, losers, standings)
+    print_round_results("First round", winners, losers, standings)
 
-    # play the second round matches
+    # play the second round match
+    second_round_winners, second_round_losers = play_round(winners)
+
+    # update standings after second round
+    update_standings(second_round_winners, second_round_losers, standings)
+    print_round_results("Second round", second_round_winners, second_round_losers, standings)
+
+    # play the losers bracket matches
+    loser_round_winners, loser_round_losers = play_round(losers)
 
 
-    # winners_bracket = winners
-    # losers_bracket = losers
-    # print("winners_bracket: ", winners_bracket)
-    # print("losers_bracket: ", losers_bracket)
-    # wb_matches = [(winners_bracket[i], winners_bracket[j]) for i in range(4) for j in range(i + 1, 4)]
-    # lb_matches = [(losers_bracket[i], losers_bracket[j]) for i in range(4) for j in range(i + 1, 4)]
-    # print("wb_matches: ", wb_matches)
-    # print("lb_matches: ", lb_matches)
-    # for match in wb_matches:
-    #     # TODO: define the winning formula based on the datasets
-    #     winner = random.choice(match)
+    # update standings after loser bracket round
+    update_standings(loser_round_winners, loser_round_losers, standings)
+    print_round_results("Loser round", loser_round_winners, loser_round_losers, standings)
+
+    # play the next round matches
+    # next_round_winners, _ = play_round(second_round_winners)
+    # next_round_losers = []
+    # for loser in loser_round_winners:
+    #     loser_match = (loser, loser_round_losers.pop(0))
+    #     winner, _ = play_match(loser_match)
+    #     next_round_losers.append(winner)
+
+    # update standings after next round
+    # update_standings(next_round_winners, next_round_losers, standings)
+    # print_round_results("Next round", next_round_winners, next_round_losers, standings)
+    #
+    # # eliminate countries with 2 losses
+    # next_round_losers = [country for country in next_round_losers if standings[country]["losses"] < 2]
 
     return standings
 
@@ -247,11 +273,11 @@ def round_robin_simulation(num_sims):
 
 if __name__ == "__main__":
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
-    # pools = generate_pools(countries, None)
+    pools = generate_pools(countries, None)
     # print(pools)
 
-    results = round_robin_simulation(10)
+    # results = round_robin_simulation(10)
 
 
-    # db = double_elimination_game(pools)
+    db = double_elimination_game(pools)
 
