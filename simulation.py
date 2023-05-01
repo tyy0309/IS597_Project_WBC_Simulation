@@ -144,7 +144,7 @@ def generate_pitcher_games_records(pitchers: List[Pitcher], sim_times):
 
     country = pitchers[0].country
     with open(f'random_generated/pitcher_records_{country}.csv', mode='w', newline='') as output_file:
-        fieldnames = ['player', 'team', 'Random_ERA', 'Random_WHIP', 'Random_BAA']
+        fieldnames = ['player', 'team', 'Random_ERA', 'Random_WHIP', 'Random_BAA', 'static_IP', 'static_K']
         writer = csv.DictWriter(output_file, fieldnames=fieldnames)
 
         writer.writeheader()
@@ -156,6 +156,8 @@ def generate_pitcher_games_records(pitchers: List[Pitcher], sim_times):
                     'Random_ERA': pitcher.random_ERA[i],
                     'Random_WHIP': pitcher.random_WHIP[i],
                     'Random_BAA': pitcher.random_BAA[i],
+                    'static_IP': pitcher.IP,
+                    'static_K': pitcher.SO
                 })
 
 def record_to_dict(filename):
@@ -175,23 +177,27 @@ def record_to_dict(filename):
 def pitching_score(country: str, pitch_count: int, sim_index):
 
     p1 = random.randint(45, pitch_count - 45)  # 先發投手用球數
-    p3 = random.randint(5, 15)  # 後援投手用球數
-    p2 = random.randint(5, pitch_count - p1 - p3)  # 中繼投手用球數
+    p3 = random.randint(1, 15)  # 後援投手用球數
+    p2 = random.randint(1, pitch_count - p1 - p3)  # 中繼投手用球數
 
     pitch_for_each = [p1, p2, p3]
-    # 100%?
-    pitch_count_percentage = [count / (p1+p2+p3) for count in pitch_for_each]
+
+    pitch_count_percentage = [count / pitch_count for count in pitch_for_each]
     pitcher_data = record_to_dict(f'random_generated/pitcher_records_{country}.csv')
     weighted_performance = []
-    # {player: [[aus,0.3,0.2,0.1],[aus, ..]]}
+
     for percentage, player in zip(pitch_count_percentage, pitcher_data.keys()):
         normalized_ERA = 1 - float(pitcher_data[player][sim_index][1]) / (ERA_MAX - ERA_MIN)
         normalized_WHIP = 1 - float(pitcher_data[player][sim_index][2]) / (WHIP_MAX - WHIP_MIN)
         normalized_BAA = 1 - float(pitcher_data[player][sim_index][3]) / (AVG_MAX - AVG_MIN)
+        normalized_IP = float(pitcher_data[player][sim_index][4]) / (IP_MAX - IP_MIN)
+        normalized_K = float(pitcher_data[player][sim_index][5]) / (K_MAX - K_MIN)
 
-        performance = (0.4 * normalized_ERA) + \
-                      (0.35 * normalized_WHIP) + \
-                      (0.25 * normalized_BAA)
+        performance = (0.3 * normalized_ERA) + \
+                      (0.25 * normalized_WHIP) + \
+                      (0.15 * normalized_BAA) + \
+                      (0.1 * normalized_IP) + \
+                      (0.2 * normalized_K)
 
         weighted_performance.append(percentage * performance)
 
@@ -210,7 +216,7 @@ def generate_batter_games_records(batters: List[Batter], sim_times):
 
     country = batters[0].country
     with open(f'random_generated/batter_records_{country}.csv', mode='w', newline='') as output_file:
-        fieldnames = ['player', 'team', 'Random_BA', 'Random_OPS']
+        fieldnames = ['player', 'team', 'Random_BA', 'Random_OPS', 'static_RBI', 'static_BB', 'static_SO', 'static_SB']
         writer = csv.DictWriter(output_file, fieldnames=fieldnames)
 
         writer.writeheader()
@@ -220,7 +226,11 @@ def generate_batter_games_records(batters: List[Batter], sim_times):
                     'player': batter.player,
                     'team': batter.country,
                     'Random_BA': batter.random_BA[i],
-                    'Random_OPS': batter.random_OPS[i]
+                    'Random_OPS': batter.random_OPS[i],
+                    'static_RBI': batter.RBI,
+                    'static_BB': batter.BB,
+                    'static_SO': batter.SO,
+                    'static_SB': batter.SB
                 })
 
 def hitting_score(country, sim_index) -> float:
@@ -231,10 +241,19 @@ def hitting_score(country, sim_index) -> float:
     for player in batter_data.keys():
         normalized_BA = float(batter_data[player][sim_index][1]) / (AVG_B_MAX - AVG_B_MIN)
         normalized_OPS = float(batter_data[player][sim_index][2]) / (OPS_MAX - OPS_MIN)
+        normalized_RBI = float(batter_data[player][sim_index][3]) / (RBI_MAX - RBI_MIN)
+        normalized_BB = float(batter_data[player][sim_index][4]) / (BB_MAX - BB_MIN)
+        normalized_SO = 1 - float(batter_data[player][sim_index][5]) / (SO_MAX - SO_MIN)
+        normalized_SB = float(batter_data[player][sim_index][6]) / (SB_MAX - SB_MIN)
+
 
         # Calculate the performance for each pitcher
-        performance = (0.5 * normalized_BA) + \
-                      (0.5 * normalized_OPS)
+        performance = (0.25 * normalized_BA) + \
+                      (0.30 * normalized_OPS) + \
+                      (0.1 * normalized_RBI) + \
+                      (0.15 * normalized_BB) + \
+                      (0.1 * normalized_SO) + \
+                      (0.1 * normalized_SB)
 
         # Add the weighted performance score for the current pitcher to the list
         all_performance.append(performance)
@@ -246,13 +265,13 @@ def hitting_score(country, sim_index) -> float:
 def calculate_total_score(team1: Team, team2: Team, pitch_count: int, sim_index):
     p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers[0].country, pitch_count, sim_index)
     team1_hitting_score = hitting_score(team1.batters[0].country, sim_index)
-    team1_total_score = (0.7 * team1_pitching_score) + (0.3 * team1_hitting_score)
+    team1_total_score = (0.75 * team1_pitching_score) + (0.25 * team1_hitting_score)
 
     p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers[0].country, pitch_count, sim_index)
     team2_hitting_score = hitting_score(team2.batters[0].country, sim_index)
-    team2_total_score = (0.7 * team2_pitching_score) + (0.3 * team2_hitting_score)
-    print('\n\nTEAM1', team1_pitching_score, team1_hitting_score)
-    print('TEAM2', team2_pitching_score, team2_hitting_score)
+    team2_total_score = (0.75 * team2_pitching_score) + (0.25 * team2_hitting_score)
+    # print('\nTEAM1', team1_pitching_score, team1_hitting_score)
+    # print('TEAM2', team2_pitching_score, team2_hitting_score)
     return team1_total_score, team2_total_score, p1_cnt, p2_cnt
 
 
