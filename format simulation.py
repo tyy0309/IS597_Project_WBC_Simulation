@@ -4,15 +4,74 @@ Judy(Chu-Ting) Chan
 Cindy(Ting-Yin) Yang
 """
 import random
+from simulation import generate_team, pitching_score, hitting_score
 import pandas as pd
 from typing import List
 from dataclasses import dataclass
 
+# Constant variables for pitcher
+ERA_MIN = 0.0
+ERA_MAX = 108.0
+IP_MIN = 0.1
+IP_MAX = 9.2
+K_MIN = 0
+K_MAX = 13
+WHIP_MIN = 0.21
+WHIP_MAX = 12.0
+AVG_MIN = 0.067
+AVG_MAX = 0.8
 
-def get_random_score(team_stats):
-    # TODO: Implement a function that generates a random score based on the team's performance statistics
-    # For example, you could use a regression model that predicts the expected score based on factors such as batting average, pitching effectiveness, etc.
-    return random.randint(0, 10)
+# Constant variables for batter
+AVG_B_MIN = 0.067
+AVG_B_MAX = 0.8
+OPS_MIN = 0
+OPS_MAX = 1.507
+RBI_MIN = 0
+RBI_MAX = 13
+BB_MIN = 0
+BB_MAX = 10
+SO_MIN = 0
+SO_MAX = 13
+SB_MIN = 0
+SB_MAX = 3
+
+def get_score(country_name):
+    team = generate_team(country_name, 3, 9)
+
+    pitch_performance = []
+    for pitcher in team.pitchers:
+        normalized_ERA = 1 - pitcher.ERA / (ERA_MAX - ERA_MIN)
+        normalized_WHIP = 1 - pitcher.WHIP / (WHIP_MAX - WHIP_MIN)
+        normalized_BAA = 1 - pitcher.AVG / (AVG_MAX - AVG_MIN)
+        normalized_IP = pitcher.IP / (IP_MAX - IP_MIN)
+        normalized_K = pitcher.SO / (K_MAX - K_MIN)
+        performance = (0.3 * normalized_ERA) + \
+                      (0.25 * normalized_WHIP) + \
+                      (0.15 * normalized_BAA) + \
+                      (0.1 * normalized_IP) + \
+                      (0.2 * normalized_K)
+        pitch_performance.append(performance)
+    pitch_score = sum(pitch_performance)/3
+
+    hit_performance = []
+    for batter in team.batters:
+        normalized_SO = 1 - batter.SO / (SO_MAX - SO_MIN)
+        normalized_AVG_B = batter.AVG / (AVG_B_MAX - AVG_B_MIN)
+        normalized_OPS = batter.OPS / (OPS_MAX - OPS_MIN)
+        normalized_RBI = batter.RBI / (RBI_MAX - RBI_MIN)
+        normalized_BB = batter.BB / (BB_MAX - BB_MIN)
+        normalized_SB = batter.SB / (SB_MAX - SB_MIN)
+        performance = (0.25 * normalized_AVG_B) + \
+                      (0.30 * normalized_OPS) + \
+                      (0.15 * normalized_RBI) + \
+                      (0.1 * normalized_BB) + \
+                      (0.1 * normalized_SO) + \
+                      (0.1 * normalized_SB)
+        hit_performance.append(performance)
+    hit_score = sum(hit_performance) / 9
+
+    total_score = 7.5 * pitch_score + 2.5 * hit_score
+    return total_score
 
 
 def generate_pools(countries, num_pools=None):
@@ -28,13 +87,11 @@ def generate_pools(countries, num_pools=None):
     pools = []
     selected_countries = set()
     for i in range(num_pools):
-        # TODO: get random countries
         available_countries = list(set(countries) - selected_countries)
         pool = random.sample(available_countries, k=4)
         pools.append(pool)
         selected_countries.update(pool)
 
-    # print(pools)
     return pools
 
 
@@ -74,9 +131,8 @@ def round_robin_game(pools):
         for i in range(len(pool)):
             for j in range(i+1, len(pool)):
                 if i != j:
-                    # TODO: the score could be defined by the hitting score and pitching score in sim.py
-                    team_i_score = random.randint(0, 10)
-                    team_j_score = random.randint(0, 10)
+                    team_i_score = get_score(pool[i])
+                    team_j_score = get_score(pool[j])
 
                     if team_i_score > team_j_score:
                         standings[f'pool_{chr(65+pool_idx)}'][pool[i]] += 1
@@ -111,6 +167,17 @@ def round_robin_game(pools):
         print("Countries get into the final round: ", top_teams)
         return standings, top_teams
 
+def final_game(top_2_teams: list):
+    team1_score = get_score(top_2_teams[0])
+    team2_score = get_score(top_2_teams[1])
+
+    if team1_score > team2_score:
+        return top_2_teams[0]
+    elif team2_score > team1_score:
+        return top_2_teams[1]
+    else:
+        # TODO: Tiebreaker?
+        return "It's a tie!"
 
 def double_elimination_game(pools):
 
@@ -162,8 +229,6 @@ def double_elimination_game(pools):
     return standings
 
 
-
-
 def round_robin_simulation(num_sims):
     accumulated_results = []
     for sim in range(num_sims):
@@ -172,6 +237,9 @@ def round_robin_simulation(num_sims):
         pools = generate_pools(countries, None)
         standings, top_teams = round_robin_game(pools)
         accumulated_results.append((standings, top_teams))
+
+        champion = final_game(accumulated_results[-1][1])
+        print(f'{champion} wins the 2023 WBC!')
     return accumulated_results
 
 
@@ -181,6 +249,9 @@ if __name__ == "__main__":
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
     # pools = generate_pools(countries, None)
     # print(pools)
-    results = round_robin_simulation(3)
+
+    results = round_robin_simulation(10)
+
+
     # db = double_elimination_game(pools)
 
