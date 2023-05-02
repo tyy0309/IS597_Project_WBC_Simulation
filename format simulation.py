@@ -4,7 +4,8 @@ Judy(Chu-Ting) Chan
 Cindy(Ting-Yin) Yang
 """
 import random
-from simulation import generate_team, pitching_score, hitting_score
+import statistics as stats
+from simulation import generate_team
 import pandas as pd
 from typing import List
 from dataclasses import dataclass
@@ -160,7 +161,6 @@ def final_game(top_2_teams: list):
     elif team2_score > team1_score:
         return top_2_teams[1]
     else:
-        # TODO: Tiebreaker?
         return "It's a tie!"
 
 
@@ -256,28 +256,55 @@ def double_elimination_game(pools):
 
 
 def round_robin_simulation(num_sims):
-    accumulated_results = []
+    semi_stat = {"AUS": 0, "CUB": 0, "ITA": 0, "JPN": 0, "MEX": 0, "PUR": 0, "USA": 0, "VEN": 0}
+    final_stat = {"AUS": 0, "CUB": 0, "ITA": 0, "JPN": 0, "MEX": 0, "PUR": 0, "USA": 0, "VEN": 0}
+
     for sim in range(num_sims):
+        accumulated_results = []
+
         print("------------------------------------------------------------------------------------------------\n")
         print(f"Running simulation {sim + 1} of {num_sims}...")
         pools = generate_pools(countries, None)
         standings, top_teams = round_robin_game(pools)
         accumulated_results.append((standings, top_teams))
 
+        semi_final = list(accumulated_results[0][0]['pool_A'].keys())
+        for team in semi_final:
+            semi_stat[team] += 1
+
+        final = list(accumulated_results[-1][1])
+        for team in final:
+            final_stat[team] += 1
+
         champion = final_game(accumulated_results[-1][1])
         print(f'{champion} wins the 2023 WBC!')
+
+    print('\n\n------------------------------------------------------------------------------------------------')
+    print("\nSummary Statistics")
+    print("simulation times:", num_sims)
+    # print(semi_stat)
+    # print(final_stat)
+
+    semi_probs = [semi_stat[k] / num_sims for k in semi_stat.keys()]
+    final_probs = [final_stat[k] / num_sims for k in final_stat.keys()]
+
+    print(f'{"Country":<10}{"#Semi":>8}{"Semi-Final Prob.":>20}{"#Final":>10}{"Final Prob.":>18}')
+    for i in range(len(semi_stat)):
+        k = list(semi_stat.keys())[i]
+        print(f"{k:<10}{semi_stat[k]:>8}{semi_probs[i]:>15,.2f}{final_stat[k]:>15}{final_probs[i]:>15,.2f}")
+    # print(f'{"Total":<10}{str(num_sims * 4):>8}{"-":>15}{str(num_sims * 2):>15}{"-":>15}')
+
     return accumulated_results
-
-
 
 
 if __name__ == "__main__":
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
-    pools = generate_pools(countries, None)
-    # print(pools)
 
-    # results = round_robin_simulation(10)
+    # pools = generate_pools(countries, None)
+
+    # num_sims = int(input("Enter the count of simulation: "))
+    # results = round_robin_simulation(num_sims)
 
 
-    db = double_elimination_game(pools)
+    # double_elimination_game(pools)
 
