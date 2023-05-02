@@ -198,45 +198,19 @@ def checkActiveMatches(det, competitorPairs):
 
 
 def round_robin_simulation():
-    semi_stat = {"AUS": 0, "CUB": 0, "ITA": 0, "JPN": 0, "MEX": 0, "PUR": 0, "USA": 0, "VEN": 0}
-    final_stat = {"AUS": 0, "CUB": 0, "ITA": 0, "JPN": 0, "MEX": 0, "PUR": 0, "USA": 0, "VEN": 0}
-
-    # for sim in range(num_sims):
     accumulated_results = []
 
-    # print("------------------------------------------------------------------------------------------------\n")
-    # print(f"Running simulation {sim + 1} of {num_sims}...")
     pools = generate_pools(countries, None)
     standings, top_teams = round_robin_game(pools)
     accumulated_results.append((standings, top_teams))
 
     semi_final = list(accumulated_results[0][0]['pool_A'].keys())
-    for team in semi_final:
-        semi_stat[team] += 1
-
     final = list(accumulated_results[-1][1])
-    for team in final:
-        final_stat[team] += 1
 
     champion = final_game(accumulated_results[-1][1])
     print(f'{champion} wins the 2023 WBC!')
 
-    # print('\n\n------------------------------------------------------------------------------------------------')
-    # print("\nSummary Statistics")
-    # print("simulation times:", num_sims)
-    # # print(semi_stat)
-    # # print(final_stat)
-    #
-    # semi_probs = [semi_stat[k] / num_sims for k in semi_stat.keys()]
-    # final_probs = [final_stat[k] / num_sims for k in final_stat.keys()]
-    #
-    # print(f'{"Country":<10}{"#Semi":>8}{"Semi-Final Prob.":>20}{"#Final":>10}{"Final Prob.":>18}')
-    # for i in range(len(semi_stat)):
-    #     k = list(semi_stat.keys())[i]
-    #     print(f"{k:<10}{semi_stat[k]:>8}{semi_probs[i]:>15,.2f}{final_stat[k]:>15}{final_probs[i]:>15,.2f}")
-    # # print(f'{"Total":<10}{str(num_sims * 4):>8}{"-":>15}{str(num_sims * 2):>15}{"-":>15}')
-
-    return accumulated_results
+    return semi_final, final
 
 def double_elimination(stat):
     det = DoubleEliminationTournament(stat.keys())
@@ -246,7 +220,7 @@ def double_elimination(stat):
 
     matches = det.get_active_matches()
     accumulated_winners = []
-    print("\n 14 Match Details")
+    print("\n 14 Matches:")
 
     while len(matches) > 0:
         for match in matches:
@@ -274,31 +248,62 @@ def double_elimination(stat):
     print("Final: ", accumulated_winners[-2:])
     print(f'{accumulated_winners[-1:][0]} wins the 2023 WBC!')
 
+    return semi_unique, accumulated_winners[-2:]
+
 
 if __name__ == "__main__":
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
 
+    num_sims = int(input("Enter the count of simulation: "))
 
-    pools = generate_pools(countries, None)
+    semi_rrf = {team: 0 for team in countries}
+    final_rrf = {team: 0 for team in countries}
+    semi_def = {team: 0 for team in countries}
+    final_def = {team: 0 for team in countries}
 
-    # num_sims = int(input("Enter the count of simulation: "))
-    # results = round_robin_simulation(num_sims)
-
-    num_sims = 5
-
-    stat = {"AUS": 0, "CUB": 0, "ITA": 0, "JPN": 0, "MEX": 0, "PUR": 0, "USA": 0, "VEN": 0}
     for sim in range(num_sims):
         print("\n------------------------------------------------------------------------------------------------")
         print("------------------------------------------------------------------------------------------------")
         print(f"Running simulation {sim + 1} of {num_sims}...")
         print(f"\n -----Round Robin Format-----")
-        round_robin_simulation()
+        semi_list_r, final_list_r = round_robin_simulation()
+
+        for team in semi_list_r:
+            semi_rrf[team] += 1
+
+        for team in final_list_r:
+            final_rrf[team] += 1
 
         print(f"\n -----Double Elimination Format-----")
         random.shuffle(countries)
         stat = {}
         for team in countries:
             stat[team] = 0
-        double_elimination(stat)
+        semi_list_d, final_list_d = double_elimination(stat)
 
+        for team in semi_list_d:
+            semi_def[team] += 1
 
+        for team in final_list_d:
+            final_def[team] += 1
+
+    print('\n\n------------------------------------------------------------------------------------------------')
+    print("\nSummary Statistics")
+    print("Simulation times:", num_sims)
+    print("\n -----Round Robin Format-----")
+    print(f'{"Country":<10}{"#Semi":>8}{"Semi-Final Prob.":>20}{"#Final":>10}{"Final Prob.":>18}')
+    semi_probs_rrf = [semi_rrf[k] / num_sims for k in semi_rrf.keys()]
+    final_probs_rrf = [final_rrf[k] / num_sims for k in final_rrf.keys()]
+
+    for i in range(len(semi_rrf)):
+        k = list(semi_rrf.keys())[i]
+        print(f"{k:<10}{semi_rrf[k]:>8}{semi_probs_rrf[i]:>15,.2f}{final_rrf[k]:>15}{final_probs_rrf[i]:>15,.2f}")
+
+    print("\n -----Double Elimination Format-----")
+    print(f'{"Country":<10}{"#Semi":>8}{"Semi-Final Prob.":>20}{"#Final":>10}{"Final Prob.":>18}')
+    semi_probs_def = [semi_def[k] / num_sims for k in semi_def.keys()]
+    final_probs_def = [final_def[k] / num_sims for k in final_def.keys()]
+
+    for i in range(len(semi_def)):
+        k = list(semi_def.keys())[i]
+        print(f"{k:<10}{semi_def[k]:>8}{semi_probs_def[i]:>15,.2f}{final_def[k]:>15}{final_probs_def[i]:>15,.2f}")
