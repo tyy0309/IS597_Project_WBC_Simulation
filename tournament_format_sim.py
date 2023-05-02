@@ -35,8 +35,14 @@ SB_MAX = 3
 
 
 def get_score(country_name):
+    """Returns the total score for a given country's team based on their pitchers and batters' performances.
+
+    :param country_name:The name of the country for which to calculate the total score.
+    :return: The score of the given country's team.
+    """
     team = generate_team(country_name, 3, 9)
 
+    # Calculate pitcher's performance
     pitch_performance = []
     for pitcher in team.pitchers:
         normalized_ERA = 1 - pitcher.ERA / (ERA_MAX - ERA_MIN)
@@ -52,6 +58,7 @@ def get_score(country_name):
         pitch_performance.append(performance)
     pitch_score = sum(pitch_performance) / 3
 
+    # Calculate hitter's performance
     hit_performance = []
     for batter in team.batters:
         normalized_SO = 1 - batter.SO / (SO_MAX - SO_MIN)
@@ -74,6 +81,12 @@ def get_score(country_name):
 
 
 def generate_pools(countries, num_pools=None):
+    """Generates pools of countries of 4 countries each, given a list of countries.
+
+    :param countries: A list of country names.
+    :param num_pools: Number of pools.
+    :return: A list of country pools.
+    """
     if len(countries) < 4:
         raise ValueError("Number of countries should be at least 4")
 
@@ -95,6 +108,11 @@ def generate_pools(countries, num_pools=None):
 
 
 def get_defensive_rate(team):
+    """Returns a defensive rate for a given team.
+
+    :param team: The team to get the defensive rate for.
+    :return: The defensive rate for the team.
+    """
     team_runs_allowed = random.randint(0, 81)
     team_defensive_outs = 27
 
@@ -102,12 +120,26 @@ def get_defensive_rate(team):
 
 
 def round_robin_game(pools):
+    """The function simulates a round-robin tournament where each team in a pool plays every other team in the
+    same pool. The winner is determined by comparing the scores obtained by each team in each match. In case
+    of a tie, a random winner is chosen. The function recursively calls itself if there are more than two
+    top teams that advance to the next round.
+
+    :param pools: A list of lists, where each sublist contains the countries in a pool
+    :return: A tuple containing the standings and the list of top teams that advance to the next round.
+             The `standings` is a dictionary of dictionaries, where each inner dictionary contains the wins
+             for each country in a pool (e.g. {'pool_A': {'USA': 2, 'Canada': 1, 'Mexico': 0}}).
+             The list of top teams is a list of country names (e.g. ['USA', 'Canada']).
+    """
+
+    # Initialize the standings dictionary with zeroes for each country in each pool
     num_pools = len(pools)
     standings = {}
     for j in range(num_pools):
         pool_name = f'pool_{chr(65 + j)}'
         standings[pool_name] = {country: 0 for country in pools[j]}
 
+    # Play each match and update the standings
     for pool_idx, pool in enumerate(pools):
         for i in range(len(pool)):
             for j in range(i + 1, len(pool)):
@@ -125,7 +157,6 @@ def round_robin_game(pools):
                         winner = random.choice([pool[i], pool[j]])
                         standings[f'pool_{chr(65 + pool_idx)}'][winner] += 1
                         # tiebreaker(pool, pool_idx, pool[i], pool[j], standings)
-        # print(standings)
 
     # Find the teams with the highest number of wins
     top_teams = []
@@ -135,6 +166,7 @@ def round_robin_game(pools):
         sorted_wins = sorted(wins, key=lambda x: (-x[1], -get_defensive_rate(x[0])))
         top_teams.extend([team for team, wins in sorted_wins[:2]])
 
+    # If there are more than two top teams, recursively call the function with a new pool
     if len(top_teams) > 2:
         print("First round: ")
         print(standings)
@@ -149,7 +181,13 @@ def round_robin_game(pools):
         return standings, top_teams
 
 
+
 def final_game(top_2_teams: list):
+    """Determines the winner of the final game between the top 2 teams.
+
+    :param top_2_teams: A list containing the names of the top 2 teams.
+    :return: The name of the winning team or "It's a tie!" if the scores are equal.
+    """
     team1_score = get_score(top_2_teams[0])
     team2_score = get_score(top_2_teams[1])
 
@@ -161,8 +199,12 @@ def final_game(top_2_teams: list):
         return "It's a tie!"
 
 
-## double elimination
+# double elimination
 def printMatches(matches):
+    """Prints the active matches in the given list of matches.
+
+    :param matches: A list of matches.
+    """
     print("Active Matches:")
     for match in matches:
         if match.is_ready_to_start():
@@ -171,26 +213,47 @@ def printMatches(matches):
 
 
 def add_win(det, competitor):
+    """Adds a win for the given competitor in the given double elimination tournament.The function first finds the
+        active match for the given competitor and then adds a win for the competitor in that match.
+
+    :param det: A double elimination tournament object.
+    :param competitor: The competitor to add a win for.
+    """
     det.add_win(det.get_active_matches_for_competitor(competitor)[0], competitor)
 
 
 def checkActiveMatches(det, competitorPairs):
+    """Checks if the given list of competitor pairs matches the active matches in the given double elimination tournament.
+
+    :param det: A double elimination tournament object.
+    :param competitorPairs: A list of competitor pairs.
+    """
+
+    # Gets the active matches in the tournament
     matches = det.get_active_matches()
+
+    # Compares the number of active matches with the number of competitor pairs
     if len(competitorPairs) != len(matches):
         printMatches(matches)
         print(competitorPairs)
         raise Exception("Invalid number of competitors: {} vs {}".format(
             len(matches), len(competitorPairs)))
+
+    # Checks if each competitor pair matches an active match
     for match in matches:
         inMatches = False
         for competitorPair in competitorPairs:
             participants = match.get_participants()
+
+            # If the competitor pair matches the active match
             if competitorPair[0] == participants[0].get_competitor():
                 if competitorPair[1] == participants[1].get_competitor():
                     inMatches = True
             elif competitorPair[0] == participants[1].get_competitor():
                 if competitorPair[1] == participants[0].get_competitor():
                     inMatches = True
+
+        # If no match was found for a competitor pair, raises an exception
         if not inMatches:
             printMatches(matches)
             print(competitorPairs)
@@ -198,26 +261,52 @@ def checkActiveMatches(det, competitorPairs):
 
 
 def round_robin_simulation():
+    """This function simulates a round-robin tournament, where each country in the list of countries plays against each other.
+    It generates pools, plays round-robin games, selects the top teams, and runs the final game between them to determine
+    the winner of the tournament. It returns the semi-final and final results.
+
+    :return:
+    semi_final (list): A list of countries that reached the semi-final.
+    final (list): A list of the top two countries that reached the final.
+    """
+
+    # Initialize an empty list to accumulate the results of each round-robin game
     accumulated_results = []
 
+    # Generate pools, play round-robin games, and select the top teams
     pools = generate_pools(countries, None)
     standings, top_teams = round_robin_game(pools)
     accumulated_results.append((standings, top_teams))
 
+    # Determine the champion by running the final game between the top teams
     semi_final = list(accumulated_results[0][0]['pool_A'].keys())
     final = list(accumulated_results[-1][1])
-
     champion = final_game(accumulated_results[-1][1])
     print(f'{champion} wins the 2023 WBC!')
 
     return semi_final, final
 
+
 def double_elimination(stat):
+    """This function simulates a double-elimination tournament. It receives a dictionary of country statistics as input,
+        plays matches between countries, and eliminates countries until there is only one left, which is the champion of the
+        tournament.
+
+    :param stat: A dictionary of country statistics.
+    :return:
+    semi_unique (list): A list of countries that reached the semi-final.
+    accumulated_winners (list): A list of the top two countries that reached the final.
+    """
+
+    # Create a DoubleEliminationTournament object using the keys of the stat dictionary
     det = DoubleEliminationTournament(stat.keys())
 
+    # For each country in the stat dictionary, calculate the score using the get_score function
     for country in stat.keys():
         stat[country] = get_score(country)
 
+    # Play matches between countries and eliminate countries until there is only one left, which is the champion of the
+    # tournament
     matches = det.get_active_matches()
     accumulated_winners = []
     print("\n 14 Matches:")
@@ -237,7 +326,7 @@ def double_elimination(stat):
 
         matches = det.get_active_matches()
 
-    # print(accumulated_winners)
+    # Determine the semi-final and final results
     unique_elements = list(set(accumulated_winners))
     last_indices = [len(accumulated_winners) - 1 - accumulated_winners[::-1].index(element) for element in
                     unique_elements]
@@ -256,12 +345,13 @@ if __name__ == "__main__":
 
     num_sims = int(input("Enter the count of simulation: "))
 
-    semi_rrf = {team: 0 for team in countries}
-    final_rrf = {team: 0 for team in countries}
-    semi_def = {team: 0 for team in countries}
-    final_def = {team: 0 for team in countries}
+    semi_rrf = {team: 0 for team in countries}  # semi-finals in round-robin format
+    final_rrf = {team: 0 for team in countries}   # finals in round-robin format
+    semi_def = {team: 0 for team in countries}   # semi-finals in double elimination format
+    final_def = {team: 0 for team in countries}   # finals in double elimination format
 
     for sim in range(num_sims):
+        # Simulate the round-robin format and update team performance dictionaries
         print("\n------------------------------------------------------------------------------------------------")
         print("------------------------------------------------------------------------------------------------")
         print(f"Running simulation {sim + 1} of {num_sims}...")
@@ -274,6 +364,7 @@ if __name__ == "__main__":
         for team in final_list_r:
             final_rrf[team] += 1
 
+        # Simulate the double elimination format and update team performance dictionaries
         print(f"\n -----Double Elimination Format-----")
         random.shuffle(countries)
         stat = {}
@@ -287,9 +378,12 @@ if __name__ == "__main__":
         for team in final_list_d:
             final_def[team] += 1
 
+    # print a summary of the tournament results
     print('\n\n------------------------------------------------------------------------------------------------')
     print("\nSummary Statistics")
     print("Simulation times:", num_sims)
+
+    # print the team performance in the round-robin format
     print("\n -----Round Robin Format-----")
     print(f'{"Country":<10}{"#Semi":>8}{"Semi-Final Prob.":>20}{"#Final":>10}{"Final Prob.":>18}')
     semi_probs_rrf = [semi_rrf[k] / num_sims for k in semi_rrf.keys()]
@@ -299,6 +393,7 @@ if __name__ == "__main__":
         k = list(semi_rrf.keys())[i]
         print(f"{k:<10}{semi_rrf[k]:>8}{semi_probs_rrf[i]:>15,.2f}{final_rrf[k]:>15}{final_probs_rrf[i]:>15,.2f}")
 
+    # print the team performance in the double-elimination format
     print("\n -----Double Elimination Format-----")
     print(f'{"Country":<10}{"#Semi":>8}{"Semi-Final Prob.":>20}{"#Final":>10}{"Final Prob.":>18}')
     semi_probs_def = [semi_def[k] / num_sims for k in semi_def.keys()]
