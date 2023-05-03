@@ -13,11 +13,13 @@ Our project focuses on the 2023 World Baseball Classic (WBC) and aims to investi
 The more pitches the starting pitcher throws, the higher the probability of winning.
   
 ### Assumptions
-  - The simulation will focus on the quarterfinals to simplify the analysis.
-  - We assume that when the starting pitcher throw more pitches, it will decrease the number of pitches thrown by other pitchers in the same game.
-  - The simulation will consider only average pitcher and batter performance, competition system, and pitching limitations, and exclude factors such as weather and home team advantage.
-  - Stable performance can be represented by the standard deviation of the win rate for each game.
-  - If the points are tied in the round-robin, the ranking will be determined by the "run rate" (total runs allowed / total number of outs) among teams with the same record.
+To simplify the simulation, we have made the following assumptions:
+
+- In each game, each team will have three pitchers and nine batters on the field. There will be no player substitutions or adjustments during the game.
+- The importance of a pitcher is determined by the number of pitches thrown, while all batters are considered equally important.
+- The outcome of a game is solely determined by the combined performance of pitchers and batters, excluding external factors such as weather or home/away advantage.
+- Player data is based on the 2023 WBC event, but this project only considers data from the top eight countries and excludes players who were registered but did not participate in at least one game.
+
   
 ### Phase 1 - Design
 We have decided on the following formulas to determine the team's performance:
