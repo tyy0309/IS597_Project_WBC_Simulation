@@ -67,7 +67,7 @@ We will compare our simulation results to the actual rankings of the 2023 WBC to
 7. Australia (AUS)
 8. Italy (ITA)
 
-By analyzing our simulation results, we can determine if our model accurately predicts the performance of these teams.
+By analyzing our simulation results, we can ensure that our model accurately predicts the performance of these teams.
 
 
 ### Phase 3 - Experiment
@@ -86,13 +86,67 @@ The round-robin format is more advantageous for teams with stable performance th
 ### Assumptions
 - The simulation will focus on the quarterfinals and beyond to simplify the analysis. The finals will remain single-elimination.
 - To generate WBC data, we will use MLB data, as it is more widely available online.
-- We assume that when the starting pitcher throw more pitches, it will decrease the number of pitches thrown by other pitchers in the same game.
+[//]: # (- We assume that when the starting pitcher throw more pitches, it will decrease the number of pitches thrown by other pitchers in the same game.)
 - The simulation will consider only average pitcher and batter performance, competition system, and pitching limitations, and exclude factors such as weather and home team advantage.
-- Stable performance can be represented by the standard deviation of the win rate for each game.
+- Stable performance can be represented by the gaming result of 2023 WBC, i.e., Japan is the championship; hence, Japan has the most stable performance.
 - If the points are tied in the round-robin, the ranking will be determined by the "run rate" (total runs allowed / total number of outs) among teams with the same record.
+
+
+### Phase 1 - Design
+We have decided to use the same formula in the experiment 1 to determine the team's performance:
+
+$$\text{Total Performance}= \text{Total Pitching Score} + \text{Total Hitting Score}$$
+
+**Random Variables**:
+1. At the beginning of each game simulation, random batters and hitters are selected at in the same way of experiment 1.
+2. Randomly generating pools for the first round of game simulation.
+- Round-Robin Simulation: Generate 2 pools of four teams
+- Double-Elimination Simulation: Generate 4 pools of two teams
+3. For Round-Robin Simulation, there would be tiebreaker situations that would be determined by the "run rate".
+However, `Total Runs Allowed` data is hard to find, so we randomized the value here.
+$$\text{Run Rate}= \text{Total Runs Allowed} / \text{Total Number of Outs}$$
+
+
+  
+### Phase 2 - Validation
+
+**THE SAME AS EXPERIMENT 1**
+**Comparing Simulation Results to 2023 WBC Rankings**:
+
+We will compare our simulation results to the actual rankings of the 2023 WBC to see if they align with reality. The top eight teams in the competition are as follows:
+
+1. Japan (JPN)
+2. United States (USA)
+3. Mexico (MEX)
+4. Cuba (CUB)
+5. Venezuela (VEN)
+6. Puerto Rico (PUR)
+7. Australia (AUS)
+8. Italy (ITA)
+
+By analyzing our simulation results, we can ensure that our model accurately predicts the performance of these teams.
+
+
+### Phase 3 - Experiment
+**The results of 1000 simulations**
+- By observing the probability of each country entering Semi-Final and Final, it can be inferred that round-robin and 
+double-elimination does not differentiate the results a lot.
+
+![img_2.png](img_2.png)
+
+
+
+
+
+
 
 ## References
   - World Baseball Classic data
   https://www.mlb.com/world-baseball-classic/stats/team/runs
   - World Baseball Classic wikipedia
   https://en.wikipedia.org/wiki/2023_World_Baseball_Classic
+  - Round-Robin Tournament
+  https://en.wikipedia.org/wiki/Round-robin_tournament
+  - Double-Elimination Tournament
+  https://en.wikipedia.org/wiki/Double-elimination_tournament
+  https://github.com/smwa/double_elimination

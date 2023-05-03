@@ -153,10 +153,8 @@ def round_robin_game(pools):
                         standings[f'pool_{chr(65 + pool_idx)}'][pool[j]] += 1
                     # when the two teams have the same scores
                     else:
-                        # TODO: define the winner by the team's performance
                         winner = random.choice([pool[i], pool[j]])
                         standings[f'pool_{chr(65 + pool_idx)}'][winner] += 1
-                        # tiebreaker(pool, pool_idx, pool[i], pool[j], standings)
 
     # Find the teams with the highest number of wins
     top_teams = []
