@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import random
 import numpy as np
 from typing import List, Tuple
-from sklearn.preprocessing import MinMaxScaler
+import os
 import pandas as pd
 import csv
 import matplotlib.pyplot as plt
@@ -143,6 +143,12 @@ def generate_pitcher_games_records(pitchers: List[Pitcher], sim_times):
         pitcher.random_BAA = np.clip(pitcher.random_BAA, 0, 1)
 
     country = pitchers[0].country
+
+    directory = "random_generated"
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     with open(f'random_generated/pitcher_records_{country}.csv', mode='w', newline='') as output_file:
         fieldnames = ['player', 'team', 'Random_ERA', 'Random_WHIP', 'Random_BAA', 'static_IP', 'static_K']
         writer = csv.DictWriter(output_file, fieldnames=fieldnames)
