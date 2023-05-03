@@ -107,6 +107,7 @@ $$\text{Total Performance}= \text{Total Pitching Score} + \text{Total Hitting Sc
 2. Randomly generating pools for the first round of game simulation.
 - Round-Robin Simulation: Generate 2 pools of four teams
 - Double-Elimination Simulation: Generate 4 pools of two teams
+> **Note**: To run double_elimination() function, you need to import Tournament first by running `pip install double_elimination`.  
 3. For Round-Robin Simulation, there would be tiebreaker situations that would be determined by the "run rate".
 However, `Total Runs Allowed` data is hard to find, so we randomized the value here.
 $$\text{Run Rate}= \text{Total Runs Allowed} / \text{Total Number of Outs}$$
@@ -115,7 +116,6 @@ $$\text{Run Rate}= \text{Total Runs Allowed} / \text{Total Number of Outs}$$
   
 ### Phase 2 - Validation
 
-**THE SAME AS EXPERIMENT 1**
 **Comparing Simulation Results to 2023 WBC Rankings**:
 
 We will compare our simulation results to the actual rankings of the 2023 WBC to see if they align with reality. The top eight teams in the competition are as follows:
