@@ -73,10 +73,16 @@ By analyzing our simulation results, we can ensure that our model accurately pre
 ### Phase 3 - Experiment
 **Two teams with similar strengths**
   - By observing the conditional probability (i.e., the probability of Team A winning when their starting pitcher has a higher pitch count), it can be inferred that when the starting pitcher has a higher pitch count, the team is more likely to win.
+    ![](readme_img/result-1-details.png)
+
+    ![](readme_img/result-1-summary.png)
+
 
 **Two teams with a significant difference in strength**
   - When observing the conditional probability, it can be noticed that for the stronger team, the number of pitches thrown by the starting pitcher does not have a significant impact on the win rate. However, for the weaker team, a large proportion of their wins occur when their starting pitcher throws more pitches than the starting pitcher of the stronger team.
+    ![](readme_img/result-2-details.png)
 
+    ![](readme_img/result-2-summary.png)
 
 
 ## Experiment 2
@@ -132,7 +138,7 @@ By analyzing our simulation results, we can ensure that our model accurately pre
 - By observing the probability of each country entering Semi-Final and Final, it can be inferred that round-robin and 
 double-elimination does not differentiate the results a lot.
 
-![img_2.png](img_2.png)
+![](readme_img/img_2.png)
 
 
 
