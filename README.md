@@ -45,7 +45,7 @@ $$\text{Hitting Score}=(0.25 \times \text{BA}) + (0.3 \times \text{OPS}) + (0.15
 
 $$\text{Pitching Score}=(0.3 \times \text{ERA}) + (0.25 \times \text{WHIP}) + (0.15 \times \text{BAA}) + (0.1 \times \text{IP})+ (0.2 \times \text{K})$$
 
-$$\text{Pitching Score} = (\text{p1-pitch-count}/\text{total-pitch-count}) \times \text{p1} + (\text{p2-pitch-count}/\text{total-pitch-count}) \times \text{p2} + \(\text{p3-pitch-count}/\text{total-pitch-count}) \times \text{p3}$$
+$$\text{Pitching Score} = (\frac{\text{p1 pitch count}}{\text{total pitch count}}) \times \text{p1} + (\frac{\text{p2 pitch count}}{\text{total pitch count}}) \times \text{p2} + (\frac{\text{p3 pitch count}}{\text{total pitch count}}) \times \text{p3}$$
   
   
 ### Phase 2 - Validation
