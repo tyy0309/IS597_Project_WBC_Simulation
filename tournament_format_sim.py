@@ -39,6 +39,9 @@ def get_score(country_name):
 
     :param country_name:The name of the country for which to calculate the total score.
     :return: The score of the given country's team.
+    >>> score = get_score('USA')
+    >>> type(score)
+    <class 'float'>
     """
     team = generate_team(country_name, 3, 9)
 
@@ -86,6 +89,19 @@ def generate_pools(countries, num_pools=None):
     :param countries: A list of country names.
     :param num_pools: Number of pools.
     :return: A list of country pools.
+    >>> generate_pools(['USA', 'Canada', 'Japan'])
+    Traceback (most recent call last):
+    ValueError: Number of countries should be at least 4
+    >>> generate_pools(['USA', 'Canada', 'Japan', 'VEN'], 2)
+    Traceback (most recent call last):
+    ValueError: Number of countries is wrong
+    >>> generate_pools(['USA', 'Canada', 'Japan', 'VEN', 'Taiwan'])
+    Traceback (most recent call last):
+    ValueError: Number of countries is wrong
+    >>> countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
+    >>> pools = generate_pools(countries, 2)
+    >>> isinstance(pools, list)
+    True
     """
     if len(countries) < 4:
         raise ValueError("Number of countries should be at least 4")
@@ -93,7 +109,7 @@ def generate_pools(countries, num_pools=None):
     if num_pools is None:
         num_pools = len(countries) // 4
 
-    if len(countries) < num_pools * 4:
+    if len(countries) != num_pools * 4:
         raise ValueError("Number of countries is wrong")
 
     pools = []
@@ -112,6 +128,8 @@ def get_defensive_rate(team):
 
     :param team: The team to get the defensive rate for.
     :return: The defensive rate for the team.
+    >>> type(get_defensive_rate("Dodgers"))
+    <class 'float'>
     """
     team_runs_allowed = random.randint(0, 81)
     team_defensive_outs = 27
@@ -130,6 +148,19 @@ def round_robin_game(pools):
              The `standings` is a dictionary of dictionaries, where each inner dictionary contains the wins
              for each country in a pool (e.g. {'pool_A': {'USA': 2, 'Canada': 1, 'Mexico': 0}}).
              The list of top teams is a list of country names (e.g. ['USA', 'Canada']).
+    >>> pools = [["AUS", "CUB", "ITA", "JPN"], ["MEX", "PUR", "USA", "VEN"]]
+    >>> result = round_robin_game(pools)    # doctest: +ELLIPSIS
+    First round:
+    {'pool_A': {...}, 'pool_B': {...}}
+    Countries get into the second round:  # doctest: +ELLIPSIS
+    <BLANKLINE>
+    Second round:
+    {'pool_A': {...}}
+    Countries get into the final round:  # doctest: +ELLIPSIS
+    >>> assert isinstance(result, tuple)
+    >>> assert len(result) == 2
+    >>> assert isinstance(result[0], dict)
+    >>> assert isinstance(result[1], list)
     """
 
     # Initialize the standings dictionary with zeroes for each country in each pool
@@ -185,6 +216,9 @@ def final_game(top_2_teams: list):
 
     :param top_2_teams: A list containing the names of the top 2 teams.
     :return: The name of the winning team or "It's a tie!" if the scores are equal.
+    >>> result = final_game(['USA', 'JPN'])
+    >>> type(result)
+    <class 'str'>
     """
     team1_score = get_score(top_2_teams[0])
     team2_score = get_score(top_2_teams[1])
