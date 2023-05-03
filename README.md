@@ -146,12 +146,12 @@ double-elimination does not differentiate the results a lot.
 
 
 ## References
-  - World Baseball Classic data
+  - World Baseball Classic data \
   https://www.mlb.com/world-baseball-classic/stats/team/runs
-  - World Baseball Classic wikipedia
+  - World Baseball Classic wikipedia \
   https://en.wikipedia.org/wiki/2023_World_Baseball_Classic
-  - Round-Robin Tournament
+  - Round-Robin Tournament \
   https://en.wikipedia.org/wiki/Round-robin_tournament
-  - Double-Elimination Tournament
-  https://en.wikipedia.org/wiki/Double-elimination_tournament
+  - Double-Elimination Tournament \
+  https://en.wikipedia.org/wiki/Double-elimination_tournament \
   https://github.com/smwa/double_elimination
