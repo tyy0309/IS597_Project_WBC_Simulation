@@ -87,12 +87,11 @@ By analyzing our simulation results, we can ensure that our model accurately pre
 
 ## Experiment 2
 ### Hypothesis
-The round-robin format is more advantageous for teams with stable performance than the single-elimination format.
+The round-robin format is more advantageous for teams with stable performance than the double-elimination format.
   
 ### Assumptions
 - The simulation will focus on the quarterfinals and beyond to simplify the analysis. The finals will remain single-elimination.
 - To generate WBC data, we will use MLB data, as it is more widely available online.
-[//]: # (- We assume that when the starting pitcher throw more pitches, it will decrease the number of pitches thrown by other pitchers in the same game.)
 - The simulation will consider only average pitcher and batter performance, competition system, and pitching limitations, and exclude factors such as weather and home team advantage.
 - Stable performance can be represented by the gaming result of 2023 WBC, i.e., Japan is the championship; hence, Japan has the most stable performance.
 - If the points are tied in the round-robin, the ranking will be determined by the "run rate" (total runs allowed / total number of outs) among teams with the same record.
