@@ -1,5 +1,5 @@
 """
-IS597 Final Project
+IS597 Final Project - Experiment 1
 Judy(Chu-Ting) Chan
 Cindy(Ting-Yin) Yang
 """
@@ -10,7 +10,6 @@ from typing import List, Tuple
 import os
 import pandas as pd
 import csv
-import matplotlib.pyplot as plt
 
 
 @dataclass
@@ -96,6 +95,22 @@ SB_MAX = 3
 
 
 def generate_players(player_type, country, num_of_players):
+    """
+    Generate a list of specified number of players of a given player type from a specific country.
+
+    :param player_type: The type of player to generate. Must be either 'Pitchers' or 'Batters'.
+    :param country: The country from which the players should be selected.
+    :param num_of_players: The number of players to generate. Must be at least 1.
+    :return:  A list of randomly selected players, where each player is represented as a list of attributes.
+
+    >>> players = generate_players('Pitchers', 'USA', 2)
+    >>> isinstance(players, list)
+    True
+    >>> all([isinstance(player, list) for player in players])
+    True
+    >>> all([len(player) == 21 for player in players])
+    True
+    """
     if player_type not in ['Pitchers', 'Batters']:
         raise ValueError("Invalid player type. Choose either 'Pitcher' or 'Batter'.")
 
@@ -121,6 +136,26 @@ def generate_players(player_type, country, num_of_players):
 
 
 def generate_team(country, num_pitchers, num_batters):
+    """
+    Generate a Team object with specified number of pitchers and batters from a specific country.
+
+    :param country: The country from which the players should be selected.
+    :param num_pitchers: The number of pitchers to include in the team. Must be at least 1.
+    :param num_batters: The number of batters to include in the team. Must be at least 1.
+    :return: A Team object containing lists of Pitcher and Batter objects.
+
+    >>> team = generate_team('USA', 2, 3)
+    >>> isinstance(team, Team)
+    True
+    >>> len(team.pitchers) == 2
+    True
+    >>> len(team.batters) == 3
+    True
+    >>> all(isinstance(pitcher, Pitcher) for pitcher in team.pitchers)
+    True
+    >>> all(isinstance(batter, Batter) for batter in team.batters)
+    True
+    """
     pitchers_list = generate_players('Pitchers', country, num_pitchers)
     batters_list = generate_players('Batters', country, num_batters)
 
@@ -130,6 +165,12 @@ def generate_team(country, num_pitchers, num_batters):
     return Team(pitchers, batters)
 
 def generate_pitcher_games_records(pitchers: List[Pitcher], sim_times):
+    """
+    Generate game records for the given list of pitchers and save them as a CSV file.
+
+    :param pitchers: A list of Pitcher objects for which game records will be generated.
+    :param sim_times: The number of simulation times for each pitcher's game records.
+    """
     # Sort pitchers by performance
     pitchers.sort(key=lambda x: (x.ERA, x.WHIP, x.AVG, -x.IP, -x.SO))
 
@@ -167,6 +208,12 @@ def generate_pitcher_games_records(pitchers: List[Pitcher], sim_times):
                 })
 
 def record_to_dict(filename):
+    """
+    Read a CSV file with player records and return a dictionary with player names as keys and records as values.
+
+    :param filename: The name of the CSV file containing player records.
+    :return:  A dictionary with player names as keys and lists of records as values.
+    """
     with open(filename, newline='') as f:
         reader = csv.reader(f)
         next(reader)
@@ -181,10 +228,18 @@ def record_to_dict(filename):
 
 
 def pitching_score(country: str, pitch_count: int, sim_index):
+    """
+    Calculate the pitching score for a country based on the given pitch count and simulation index.
 
-    p1 = random.randint(45, pitch_count - 45)  # 先發投手用球數
-    p3 = random.randint(1, 15)  # 後援投手用球數
-    p2 = random.randint(1, pitch_count - p1 - p3)  # 中繼投手用球數
+    :param country: The country for which to calculate the pitching score.
+    :param pitch_count: The total number of pitches.
+    :param sim_index: The simulation index to use when fetching pitcher records.
+    :return: A tuple containing the number of pitches for the starting pitcher, the percentage of pitches for the starting
+    pitcher, and the final pitching score.
+    """
+    p1 = random.randint(45, pitch_count - 45)
+    p3 = random.randint(1, 15)
+    p2 = random.randint(1, pitch_count - p1 - p3)
 
     pitch_for_each = [p1, p2, p3]
 
@@ -212,6 +267,12 @@ def pitching_score(country: str, pitch_count: int, sim_index):
 
 
 def generate_batter_games_records(batters: List[Batter], sim_times):
+    """
+    Generate game records for the given list of batters and save them as a CSV file.
+
+    :param batters: A list of Batter objects for which game records will be generated.
+    :param sim_times: The number of simulation times for each batter's game records.
+    """
 
     for batter in batters:
         batter.random_BA = np.random.normal(batter.AVG, 0.02, sim_times)
@@ -240,7 +301,13 @@ def generate_batter_games_records(batters: List[Batter], sim_times):
                 })
 
 def hitting_score(country, sim_index) -> float:
+    """
+    Calculate the hitting score for a country based on the simulation index.
 
+    :param country: The country for which to calculate the hitting score.
+    :param sim_index: The simulation index to use when fetching pitcher records.
+    :return: A final hitting score for whole team between 0~1.
+    """
     batter_data = record_to_dict(f'random_generated/batter_records_{country}.csv')
     all_performance = []
 
@@ -269,6 +336,29 @@ def hitting_score(country, sim_index) -> float:
 
 
 def calculate_total_score(team1: Team, team2: Team, pitch_count: int, sim_index):
+    """
+    Calculate the total score for each team based on the given pitch count and simulation index.
+
+    :param team1: The first team for which to calculate the total score.
+    :param team2: The second team for which to calculate the total score.
+    :param pitch_count: The total number of pitches.
+    :param sim_index: The simulation index to use when fetching player records.
+    :return: A tuple containing the total score for team1, the total score for team2,
+    the number of pitches for the starting pitcher of team1, and the number of pitches
+    for the starting pitcher of team2.
+
+    >>> team1 = generate_team('USA', 3, 9)
+    >>> team2 = generate_team('JPN', 3, 9)
+    >>> generate_pitcher_games_records(team1.pitchers, 10)
+    >>> generate_batter_games_records(team1.batters, 10)
+    >>> generate_pitcher_games_records(team2.pitchers, 10)
+    >>> generate_batter_games_records(team2.batters, 10)
+    >>> team1_total_score, team2_total_score, p1_cnt, p2_cnt = calculate_total_score(team1, team2, 300, 1)
+    >>> 0 <= team1_total_score <= 1
+    True
+    >>> 0 <= team2_total_score <= 1
+    True
+    """
     p1_cnt, p1_cnt_pct, team1_pitching_score = pitching_score(team1.pitchers[0].country, pitch_count, sim_index)
     team1_hitting_score = hitting_score(team1.batters[0].country, sim_index)
     team1_total_score = (0.75 * team1_pitching_score) + (0.25 * team1_hitting_score)
@@ -276,12 +366,22 @@ def calculate_total_score(team1: Team, team2: Team, pitch_count: int, sim_index)
     p2_cnt, p2_cnt_pct, team2_pitching_score = pitching_score(team2.pitchers[0].country, pitch_count, sim_index)
     team2_hitting_score = hitting_score(team2.batters[0].country, sim_index)
     team2_total_score = (0.75 * team2_pitching_score) + (0.25 * team2_hitting_score)
+
     # print('\nTEAM1', team1_pitching_score, team1_hitting_score)
     # print('TEAM2', team2_pitching_score, team2_hitting_score)
     return team1_total_score, team2_total_score, p1_cnt, p2_cnt
 
 
 def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tuple[int, int, float, float]:
+    """
+    Run a Monte Carlo simulation of baseball games between two teams.
+
+    :param team1: The first team participating in the simulation
+    :param team2: The second team participating in the simulation.
+    :param num_iterations: The number of iterations (games) to simulate.
+    :return: A tuple containing the number of wins for team1, the number of wins for team2,
+    the win rate for team1, and the win rate for team2.
+    """
     team1_wins = 0
     team2_wins = 0
     team1_more_pitches_when_winning = 0
@@ -290,7 +390,6 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
     print(f'\n{"sim":<10}{"t1-Country":<15}{"t1-p1_cnt":<15}{"t1-p1_cnt_%":<15}{"t1-result":<15}{"|":<5}{"t2-Country":<15}{"t2-p1_cnt":<15}{"t2-p1_cnt_%":<15}{"t2-result":<15}')
 
     for i in range(num_iterations):
-        # random.seed()  # Reset the random seed for each iteration
         pitch_count = random.randint(120, 200)
 
         team1_total_score, team2_total_score, p1_cnt, p2_cnt = calculate_total_score(team1, team2, pitch_count, i)
@@ -327,19 +426,6 @@ def monte_carlo_simulation(team1: Team, team2: Team, num_iterations: int) -> tup
     return team1_wins, team2_wins, team1_win_rate, team2_win_rate
 
 
-# Creating a plot to validate monte_carlo_simulation function
-def create_plot(team1, team2, p1_cnt_pct_list, team1_results, team2_results):
-    plt.scatter(p1_cnt_pct_list, team1_results, label=f'{team1.pitchers[0].country} results')
-    plt.scatter(p1_cnt_pct_list, team2_results, label=f'{team2.pitchers[0].country} results')
-    plt.xlabel('Pitcher 1st Pitch Strike Percentage')
-    plt.ylabel('Team score')
-    plt.legend()
-    plt.show()
-
-
-
-
-
 if __name__ == "__main__":
 
     countries = ["AUS", "CUB", "ITA", "JPN", "MEX", "PUR", "USA", "VEN"]
@@ -365,10 +451,4 @@ if __name__ == "__main__":
     generate_pitcher_games_records(team2.pitchers, num_iterations)
     generate_batter_games_records(team2.batters, num_iterations)
 
-    # print(calculate_total_score(team1, team2, 300, 1))
-    # print(team1.pitchers)
-    # print(team1.batters)
-    # print(pitching_score(team1.pitchers, 300))
-    # print(hitting_score(team1.batters))
     team1_wins, team2_wins, team1_win_rate, team2_win_rate = monte_carlo_simulation(team1, team2, num_iterations)
-    # create_plot(team1, team2, p1_cnt_pct_list, team1_results, team2_results)

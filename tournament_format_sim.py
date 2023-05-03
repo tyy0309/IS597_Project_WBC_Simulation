@@ -1,5 +1,5 @@
 """
-IS597 Final Project
+IS597 Final Project - Experiment 2
 Judy(Chu-Ting) Chan
 Cindy(Ting-Yin) Yang
 """
