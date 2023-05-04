@@ -38,6 +38,8 @@ $$\text{Total Performance}= \text{Total Pitching Score} + \text{Total Hitting Sc
     Since we are referencing data from an entire season, but player performance should fluctuate, when selecting players, we will generate normally distributed game data based on the user input number of simulations, and ensure that the mean of these values matches the overall performance for the season 
 
     For example, if player A has a batting average of 0.3 for the entire season and 100 games are simulated, random values `x1` to `x100` of batting averages will be generated, following a normal distribution, and $$\frac{1}{100}\sum_{i=1}^{100}x_i = 0.3$$
+    
+    To make the random values generated for each game follow a normal distribution, in addition to the known season averages, we need to utilize the standard deviation of each indicator. We can choose appropriate standard deviations based on real-world data to reflect the performance fluctuations in actual games.
 
 3. Randomly allocate the number of pitches for the three pitchers and use them as weights when calculating performance scores.
    
@@ -47,9 +49,11 @@ $$\text{Total Performance}= \text{Total Pitching Score} + \text{Total Hitting Sc
 
    And also, calculating hitting performance for 9 randomly selected batters:
 
-$$\text{Hitting Score per batter}=(0.25 \times \text{BA}) + (0.3 \times \text{OPS}) + (0.15 \times \text{RBI}) + (0.1 \times \text{BB})+ (0.1 \times \text{SO})+ (0.1 \times \text{SB})$$
+   $$\text{Hitting Score per batter}=(0.25 \times \text{BA}) + (0.3 \times \text{OPS}) + (0.15 \times \text{RBI}) + (0.1 \times \text{BB})+ (0.1 \times \text{SO})+ (0.1 \times \text{SB})$$
 
-$$\text{Total Hitting Score}= \text{B1} + \text{B2} + \text{B3} + \text{B4} + \text{B5} + \text{B6} + \text{B7} + \text{B8} + \text{B9}$$
+   $$\text{Total Hitting Score}= \text{B1} + \text{B2} + \text{B3} + \text{B4} + \text{B5} + \text{B6} + \text{B7} + \text{B8} + \text{B9}$$
+
+   For more information on the meaning behind these variables and how we choose the appropriate indicator, please refer to the `data/variables.txt` file.
 
 
   
@@ -73,6 +77,7 @@ By analyzing our simulation results, we can ensure that our model accurately pre
 ### Phase 3 - Experiment
 **Two teams with similar strengths**
   - By observing the conditional probability (i.e., the probability of Team A winning when their starting pitcher has a higher pitch count), it can be inferred that when the starting pitcher has a higher pitch count, the team is more likely to win.
+  
     ![](readme_img/result-1-details.png)
 
     ![](readme_img/result-1-summary.png)
@@ -80,6 +85,7 @@ By analyzing our simulation results, we can ensure that our model accurately pre
 
 **Two teams with a significant difference in strength**
   - When observing the conditional probability, it can be noticed that for the stronger team, the number of pitches thrown by the starting pitcher does not have a significant impact on the win rate. However, for the weaker team, a large proportion of their wins occur when their starting pitcher throws more pitches than the starting pitcher of the stronger team.
+  
     ![](readme_img/result-2-details.png)
 
     ![](readme_img/result-2-summary.png)
@@ -138,12 +144,6 @@ By analyzing our simulation results, we can ensure that our model accurately pre
 double-elimination does not differentiate the results a lot.
 
 ![](readme_img/img_2.png)
-
-
-
-
-
-
 
 ## References
   - World Baseball Classic data \
