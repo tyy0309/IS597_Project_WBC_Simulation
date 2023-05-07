@@ -1,5 +1,5 @@
 """
-IS597 Final Project - Experiment 2
+IS597 Final Project - Tournament_Format_Simulation
 Judy(Chu-Ting) Chan
 Cindy(Ting-Yin) Yang
 """

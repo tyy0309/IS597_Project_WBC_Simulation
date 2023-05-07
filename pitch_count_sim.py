@@ -1,5 +1,5 @@
 """
-IS597 Final Project - Experiment 1
+IS597 Final Project - Pitch_Count_Simulation
 Judy(Chu-Ting) Chan
 Cindy(Ting-Yin) Yang
 """
