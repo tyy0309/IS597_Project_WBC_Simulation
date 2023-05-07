@@ -8,7 +8,7 @@ Cindy Yang (tyy0309), Judy Chan (iamjudy)
 
 Our project focuses on the 2023 World Baseball Classic (WBC) and aims to investigate the impact of **different competition formats** and **pitching roles** on game outcomes. The WBC has undergone significant changes in its tournament format over the past five editions. In 2006, the tournament featured round-robin group play in the first and second rounds, followed by single-elimination semifinals and finals. In 2009, the format was modified to a double-elimination system for the first two rounds (with the semifinals and final remaining single-elimination), which replaced the controversial round-robin format. In 2013, the tournament returned to a round-robin format for the first round, with the second round remaining double-elimination. In 2017, the format reverted to that of 2006, with both the first and second rounds being round-robin. For 2023, the tournament will feature a round-robin format in the first round, followed by single-elimination for the rest of the competition. By analyzing these various formats and the impact of pitching roles, we hope to gain insights into their effects on game results.
 
-### For the second experiment, we are using an existing package, double_elimination, which is provided in our references. Before running our program, please install with `pip install double_elimination` first.
+#### For the second experiment, we are using an existing package, double_elimination, which is provided in our references. Before running our program, please install with `pip install double_elimination` first.
 
 
 ## Experiment 1
