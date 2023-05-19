@@ -159,3 +159,5 @@ double-elimination does not differentiate the results a lot.
   https://en.wikipedia.org/wiki/Double-elimination_tournament \
   - Double-Elimination Package \
   https://github.com/smwa/double_elimination
+  - Presentation template \
+  https://slidesgo.com/theme/latin-baseball-team-project-proposal#search-Baseball&position-5&results-7
